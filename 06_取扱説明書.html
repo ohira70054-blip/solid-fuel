@@ -1,0 +1,439 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>06_取扱説明書 - List</title>
+    <style>
+        :root { --primary: #1a365d; --bg: #f4f7f9; --card: #ffffff; --text: #333; --accent: #2ecc71; }
+        [data-theme="dark"] { --primary: #1a202c; --bg: #1a202c; --card: #2d3748; --text: #f7fafc; --accent: #48bb78; }
+        
+        body { font-family: sans-serif; margin: 0; background: var(--bg); color: var(--text); padding-bottom: 80px; transition: 0.3s; }
+        .auth-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #1a365d; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
+        .header { background: var(--primary); color: white; padding: 20px 15px; position: sticky; top: 0; z-index: 100; text-align: center; }
+        .search-box { width: 90%; padding: 12px; font-size: 16px; border-radius: 25px; border: 1px solid #ddd; margin-top: 10px; outline: none; }
+        
+        .menu-container { display: grid; grid-template-columns: 1fr; gap: 12px; padding: 15px; }
+        .menu-btn { background: var(--card); padding: 20px; border-radius: 10px; text-decoration: none; color: var(--text); font-weight: bold; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid var(--primary); }
+        
+        .item { background: var(--card); margin: 8px 12px; padding: 15px; border-radius: 8px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .item-top { display: flex; justify-content: space-between; align-items: center; }
+        .item-name { font-size: 14px; word-break: break-all; flex: 1; }
+        
+        .btn-group { display: flex; gap: 10px; align-items: center; }
+        .btn { background: var(--primary); color: white; text-decoration: none; padding: 8px 15px; border-radius: 5px; font-size: 14px; font-weight: bold; }
+        .fav-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #ccc; padding: 0; line-height: 1; }
+        .fav-btn.active { color: #f1c40f; }
+        
+        .badge-new { background: #e53e3e; color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-right: 5px; vertical-align: middle; }
+        .footer-name { text-align: center; color: #718096; font-size: 13px; margin-top: 30px; font-weight: bold; }
+        
+        .theme-toggle { position: fixed; bottom: 20px; right: 20px; background: var(--primary); color: white; border: none; width: 50px; height: 50px; border-radius: 50%; font-size: 20px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 200; }
+        input[type="password"] { padding: 12px; font-size: 16px; border-radius: 8px; border: 1px solid #ccc; margin-bottom: 15px; width: 70%; text-align: center; color: #333; }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
+    <div id="auth" class="auth-screen">
+        <h2 style="margin-bottom:20px;">Please enter Password</h2>
+        <input type="password" id="passInput" placeholder="Password">
+        <button style="padding:12px 40px; border-radius:25px; border:none; background:var(--accent); color:white; font-weight:bold; cursor:pointer;" onclick="checkPass()">Login</button>
+    </div>
+    <script>
+        function checkPass() {
+            if (document.getElementById('passInput').value === 'sanixskg393290') {
+                document.getElementById('auth').style.display = 'none';
+                sessionStorage.setItem('isLoggedIn', 'true');
+            } else { alert('Incorrect Password'); }
+        }
+        function toggleTheme() {
+            const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+        }
+        window.onload = function() {
+            if (localStorage.getItem('theme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+            document.getElementById('passInput').addEventListener('keypress', (e) => { if(e.key==='Enter') checkPass(); });
+            if (sessionStorage.getItem('isLoggedIn') === 'true') document.getElementById('auth').style.display = 'none';
+            if (typeof loadFavs === 'function') loadFavs();
+        };
+    </script>
+
+    <div class="header">
+        <div style="font-size: 20px; font-weight: bold;">06_取扱説明書</div>
+        <input type="text" id="q" class="search-box" placeholder="スペース区切りで検索..." onkeyup="search()">
+    </div>
+    <div id="mainList">
+    
+        <div class="item" data-id="01_%E9%9B%BB%E5%8B%95%E6%A9%9F%E9%A1%9E%20/%2001_%E8%8D%8F%E5%8E%9F%E8%A3%BD%E4%BD%9C%E6%89%80_%E9%9B%91%E6%8E%92%E6%B0%B4%E7%94%A8%E6%B0%B4%E4%B8%AD%E3%83%9D%E3%83%B3%E3%83%97_DN_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name">01_電動機類 / 01_荏原製作所_雑排水用水中ポンプ_DN_取扱説明書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('01_%E9%9B%BB%E5%8B%95%E6%A9%9F%E9%A1%9E%20/%2001_%E8%8D%8F%E5%8E%9F%E8%A3%BD%E4%BD%9C%E6%89%80_%E9%9B%91%E6%8E%92%E6%B0%B4%E7%94%A8%E6%B0%B4%E4%B8%AD%E3%83%9D%E3%83%B3%E3%83%97_DN_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/06_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8/01_%E9%9B%BB%E5%8B%95%E6%A9%9F%E9%A1%9E/01_%E8%8D%8F%E5%8E%9F%E8%A3%BD%E4%BD%9C%E6%89%80_%E9%9B%91%E6%8E%92%E6%B0%B4%E7%94%A8%E6%B0%B4%E4%B8%AD%E3%83%9D%E3%83%B3%E3%83%97_DN_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="01_%E9%9B%BB%E5%8B%95%E6%A9%9F%E9%A1%9E%20/%2002_%E8%8D%8F%E5%8E%9F%E8%A3%BD%E4%BD%9C%E6%89%80_%E3%83%A9%E3%82%A4%E3%83%B3%E3%83%9D%E3%83%B3%E3%83%97_LPD%E5%9E%8B_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name">01_電動機類 / 02_荏原製作所_ラインポンプ_LPD型_取扱説明書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('01_%E9%9B%BB%E5%8B%95%E6%A9%9F%E9%A1%9E%20/%2002_%E8%8D%8F%E5%8E%9F%E8%A3%BD%E4%BD%9C%E6%89%80_%E3%83%A9%E3%82%A4%E3%83%B3%E3%83%9D%E3%83%B3%E3%83%97_LPD%E5%9E%8B_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/06_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8/01_%E9%9B%BB%E5%8B%95%E6%A9%9F%E9%A1%9E/02_%E8%8D%8F%E5%8E%9F%E8%A3%BD%E4%BD%9C%E6%89%80_%E3%83%A9%E3%82%A4%E3%83%B3%E3%83%9D%E3%83%B3%E3%83%97_LPD%E5%9E%8B_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="01_%E9%9B%BB%E5%8B%95%E6%A9%9F%E9%A1%9E%20/%2003_%E8%8D%8F%E5%8E%9F%E8%A3%BD%E4%BD%9C%E6%89%80_%E9%AB%98%E5%9C%A7%E6%B8%A6%E6%B5%81%E3%83%9D%E3%83%B3%E3%83%97_RK%E5%9E%8B_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name">01_電動機類 / 03_荏原製作所_高圧渦流ポンプ_RK型_取扱説明書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('01_%E9%9B%BB%E5%8B%95%E6%A9%9F%E9%A1%9E%20/%2003_%E8%8D%8F%E5%8E%9F%E8%A3%BD%E4%BD%9C%E6%89%80_%E9%AB%98%E5%9C%A7%E6%B8%A6%E6%B5%81%E3%83%9D%E3%83%B3%E3%83%97_RK%E5%9E%8B_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/06_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8/01_%E9%9B%BB%E5%8B%95%E6%A9%9F%E9%A1%9E/03_%E8%8D%8F%E5%8E%9F%E8%A3%BD%E4%BD%9C%E6%89%80_%E9%AB%98%E5%9C%A7%E6%B8%A6%E6%B5%81%E3%83%9D%E3%83%B3%E3%83%97_RK%E5%9E%8B_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="01_%E9%9B%BB%E5%8B%95%E6%A9%9F%E9%A1%9E%20/%2004_%E9%B6%B4%E8%A6%8B%E8%A3%BD%E4%BD%9C%E6%89%80_50PU2.75-63_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name">01_電動機類 / 04_鶴見製作所_50PU2.75-63_取扱説明書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('01_%E9%9B%BB%E5%8B%95%E6%A9%9F%E9%A1%9E%20/%2004_%E9%B6%B4%E8%A6%8B%E8%A3%BD%E4%BD%9C%E6%89%80_50PU2.75-63_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/06_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8/01_%E9%9B%BB%E5%8B%95%E6%A9%9F%E9%A1%9E/04_%E9%B6%B4%E8%A6%8B%E8%A3%BD%E4%BD%9C%E6%89%80_50PU2.75-63_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="01_%E9%9B%BB%E5%8B%95%E6%A9%9F%E9%A1%9E%20/%2005_%E9%B6%B4%E8%A6%8B%E8%A3%BD%E4%BD%9C%E6%89%80_80PUT22.2-61_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name">01_電動機類 / 05_鶴見製作所_80PUT22.2-61_取扱説明書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('01_%E9%9B%BB%E5%8B%95%E6%A9%9F%E9%A1%9E%20/%2005_%E9%B6%B4%E8%A6%8B%E8%A3%BD%E4%BD%9C%E6%89%80_80PUT22.2-61_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/06_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8/01_%E9%9B%BB%E5%8B%95%E6%A9%9F%E9%A1%9E/05_%E9%B6%B4%E8%A6%8B%E8%A3%BD%E4%BD%9C%E6%89%80_80PUT22.2-61_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="01_%E9%9B%BB%E5%8B%95%E6%A9%9F%E9%A1%9E%20/%2006_%E6%97%A5%E6%A9%9F%E8%A3%85%E3%82%A8%E3%82%A4%E3%82%B3%E3%83%BC_FG%E3%82%B7%E3%83%AA%E3%83%BC%E3%82%BA_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name"><span class="badge-new">NEW</span>01_電動機類 / 06_日機装エイコー_FGシリーズ_取扱説明書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('01_%E9%9B%BB%E5%8B%95%E6%A9%9F%E9%A1%9E%20/%2006_%E6%97%A5%E6%A9%9F%E8%A3%85%E3%82%A8%E3%82%A4%E3%82%B3%E3%83%BC_FG%E3%82%B7%E3%83%AA%E3%83%BC%E3%82%BA_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/06_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8/01_%E9%9B%BB%E5%8B%95%E6%A9%9F%E9%A1%9E/06_%E6%97%A5%E6%A9%9F%E8%A3%85%E3%82%A8%E3%82%A4%E3%82%B3%E3%83%BC_FG%E3%82%B7%E3%83%AA%E3%83%BC%E3%82%BA_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="01_%E9%9B%BB%E5%8B%95%E6%A9%9F%E9%A1%9E%20/%2007_%E3%82%A4%E3%83%AF%E3%82%AD_%E5%AE%9A%E9%87%8F%E3%83%9D%E3%83%B3%E3%83%97_TD-F_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name">01_電動機類 / 07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('01_%E9%9B%BB%E5%8B%95%E6%A9%9F%E9%A1%9E%20/%2007_%E3%82%A4%E3%83%AF%E3%82%AD_%E5%AE%9A%E9%87%8F%E3%83%9D%E3%83%B3%E3%83%97_TD-F_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/06_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8/01_%E9%9B%BB%E5%8B%95%E6%A9%9F%E9%A1%9E/07_%E3%82%A4%E3%83%AF%E3%82%AD_%E5%AE%9A%E9%87%8F%E3%83%9D%E3%83%B3%E3%83%97_TD-F_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="01_%E9%9B%BB%E5%8B%95%E6%A9%9F%E9%A1%9E%20/%2008_%E5%85%B5%E7%A5%9E%E8%A3%85%E5%82%99_NYS%2801A878RC%29_288882_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name">01_電動機類 / 08_兵神装備_NYS(01A878RC)_288882_取扱説明書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('01_%E9%9B%BB%E5%8B%95%E6%A9%9F%E9%A1%9E%20/%2008_%E5%85%B5%E7%A5%9E%E8%A3%85%E5%82%99_NYS%2801A878RC%29_288882_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/06_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8/01_%E9%9B%BB%E5%8B%95%E6%A9%9F%E9%A1%9E/08_%E5%85%B5%E7%A5%9E%E8%A3%85%E5%82%99_NYS%2801A878RC%29_288882_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="01_%E9%9B%BB%E5%8B%95%E6%A9%9F%E9%A1%9E%20/%2009_%E5%85%B5%E7%A5%9E%E8%A3%85%E5%82%99_CY%28%E3%83%95%E3%82%A1%E3%82%A4%E3%83%B3%29%2801A848RB%29_290898_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name">01_電動機類 / 09_兵神装備_CY(ファイン)(01A848RB)_290898_取扱説明書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('01_%E9%9B%BB%E5%8B%95%E6%A9%9F%E9%A1%9E%20/%2009_%E5%85%B5%E7%A5%9E%E8%A3%85%E5%82%99_CY%28%E3%83%95%E3%82%A1%E3%82%A4%E3%83%B3%29%2801A848RB%29_290898_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/06_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8/01_%E9%9B%BB%E5%8B%95%E6%A9%9F%E9%A1%9E/09_%E5%85%B5%E7%A5%9E%E8%A3%85%E5%82%99_CY%28%E3%83%95%E3%82%A1%E3%82%A4%E3%83%B3%29%2801A848RB%29_290898_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="01_%E9%9B%BB%E5%8B%95%E6%A9%9F%E9%A1%9E%20/%2010_%E3%82%A2%E3%83%B3%E3%83%AC%E3%83%83%E3%83%88_BS%E5%9E%8B_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name"><span class="badge-new">NEW</span>01_電動機類 / 10_アンレット_BS型_取扱説明書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('01_%E9%9B%BB%E5%8B%95%E6%A9%9F%E9%A1%9E%20/%2010_%E3%82%A2%E3%83%B3%E3%83%AC%E3%83%83%E3%83%88_BS%E5%9E%8B_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/06_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8/01_%E9%9B%BB%E5%8B%95%E6%A9%9F%E9%A1%9E/10_%E3%82%A2%E3%83%B3%E3%83%AC%E3%83%83%E3%83%88_BS%E5%9E%8B_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="01_%E9%9B%BB%E5%8B%95%E6%A9%9F%E9%A1%9E%20/%2011_%E7%90%86%E7%A0%94%E6%A9%9F%E5%99%A8_%E9%9B%BB%E5%8B%95%E3%83%9D%E3%83%B3%E3%83%97_MP-15S_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name">01_電動機類 / 11_理研機器_電動ポンプ_MP-15S_取扱説明書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('01_%E9%9B%BB%E5%8B%95%E6%A9%9F%E9%A1%9E%20/%2011_%E7%90%86%E7%A0%94%E6%A9%9F%E5%99%A8_%E9%9B%BB%E5%8B%95%E3%83%9D%E3%83%B3%E3%83%97_MP-15S_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/06_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8/01_%E9%9B%BB%E5%8B%95%E6%A9%9F%E9%A1%9E/11_%E7%90%86%E7%A0%94%E6%A9%9F%E5%99%A8_%E9%9B%BB%E5%8B%95%E3%83%9D%E3%83%B3%E3%83%97_MP-15S_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="01_%E9%9B%BB%E5%8B%95%E6%A9%9F%E9%A1%9E%20/%2012_%E3%82%BF%E3%82%AB%E3%83%88%E3%83%86%E3%82%AF%E3%83%8B%E3%82%AB_%E9%9D%99%E9%9F%B3%E3%82%AA%E3%82%A4%E3%83%AB%E3%83%AC%E3%82%B9%E3%82%A8%E3%82%A2%E3%83%BC%E3%82%B3%E3%83%B3%E3%83%97%E3%83%AC%E3%83%83%E3%82%B5%E3%83%BC_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name"><span class="badge-new">NEW</span>01_電動機類 / 12_タカトテクニカ_静音オイルレスエアーコンプレッサー_取扱説明書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('01_%E9%9B%BB%E5%8B%95%E6%A9%9F%E9%A1%9E%20/%2012_%E3%82%BF%E3%82%AB%E3%83%88%E3%83%86%E3%82%AF%E3%83%8B%E3%82%AB_%E9%9D%99%E9%9F%B3%E3%82%AA%E3%82%A4%E3%83%AB%E3%83%AC%E3%82%B9%E3%82%A8%E3%82%A2%E3%83%BC%E3%82%B3%E3%83%B3%E3%83%97%E3%83%AC%E3%83%83%E3%82%B5%E3%83%BC_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/06_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8/01_%E9%9B%BB%E5%8B%95%E6%A9%9F%E9%A1%9E/12_%E3%82%BF%E3%82%AB%E3%83%88%E3%83%86%E3%82%AF%E3%83%8B%E3%82%AB_%E9%9D%99%E9%9F%B3%E3%82%AA%E3%82%A4%E3%83%AB%E3%83%AC%E3%82%B9%E3%82%A8%E3%82%A2%E3%83%BC%E3%82%B3%E3%83%B3%E3%83%97%E3%83%AC%E3%83%83%E3%82%B5%E3%83%BC_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="02_%E3%82%BB%E3%83%B3%E3%82%B5%E9%A1%9E%20/%2001_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5%20/%2001_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5_FR%E3%82%B7%E3%83%AA%E3%83%BC%E3%82%BA%EF%BC%88FR-LM20_FR-LM20L_FR-LMH20%EF%BC%89%E3%83%AD%E3%83%B3%E3%82%B0%E3%83%AC%E3%83%B3%E3%82%B8_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name">02_センサ類 / 01_キーエンス_レーザー式レベルセンサ / 01_キーエンス_レーザー式レベルセンサ_FRシリーズ（FR-LM20_FR-LM20L_FR-LMH20）ロングレンジ_取扱説明書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('02_%E3%82%BB%E3%83%B3%E3%82%B5%E9%A1%9E%20/%2001_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5%20/%2001_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5_FR%E3%82%B7%E3%83%AA%E3%83%BC%E3%82%BA%EF%BC%88FR-LM20_FR-LM20L_FR-LMH20%EF%BC%89%E3%83%AD%E3%83%B3%E3%82%B0%E3%83%AC%E3%83%B3%E3%82%B8_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/06_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8/02_%E3%82%BB%E3%83%B3%E3%82%B5%E9%A1%9E/01_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5/01_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5_FR%E3%82%B7%E3%83%AA%E3%83%BC%E3%82%BA%EF%BC%88FR-LM20_FR-LM20L_FR-LMH20%EF%BC%89%E3%83%AD%E3%83%B3%E3%82%B0%E3%83%AC%E3%83%B3%E3%82%B8_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="02_%E3%82%BB%E3%83%B3%E3%82%B5%E9%A1%9E%20/%2001_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5%20/%2002_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5_FR%E3%82%B7%E3%83%AA%E3%83%BC%E3%82%BA%EF%BC%88FR-S01%EF%BC%89%E3%82%B7%E3%83%A7%E3%83%BC%E3%83%88%E3%83%AC%E3%83%B3%E3%82%B8_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name">02_センサ類 / 01_キーエンス_レーザー式レベルセンサ / 02_キーエンス_レーザー式レベルセンサ_FRシリーズ（FR-S01）ショートレンジ_取扱説明書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('02_%E3%82%BB%E3%83%B3%E3%82%B5%E9%A1%9E%20/%2001_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5%20/%2002_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5_FR%E3%82%B7%E3%83%AA%E3%83%BC%E3%82%BA%EF%BC%88FR-S01%EF%BC%89%E3%82%B7%E3%83%A7%E3%83%BC%E3%83%88%E3%83%AC%E3%83%B3%E3%82%B8_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/06_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8/02_%E3%82%BB%E3%83%B3%E3%82%B5%E9%A1%9E/01_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5/02_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5_FR%E3%82%B7%E3%83%AA%E3%83%BC%E3%82%BA%EF%BC%88FR-S01%EF%BC%89%E3%82%B7%E3%83%A7%E3%83%BC%E3%83%88%E3%83%AC%E3%83%B3%E3%82%B8_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="02_%E3%82%BB%E3%83%B3%E3%82%B5%E9%A1%9E%20/%2001_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5%20/%2003_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5_FR%E3%82%B7%E3%83%AA%E3%83%BC%E3%82%BA_%E3%83%A6%E3%83%BC%E3%82%B6%E3%83%BC%E3%82%BA%E3%83%9E%E3%83%8B%E3%83%A5%E3%82%A2%E3%83%AB.pdf">
+            <div class="item-top">
+                <div class="item-name">02_センサ類 / 01_キーエンス_レーザー式レベルセンサ / 03_キーエンス_レーザー式レベルセンサ_FRシリーズ_ユーザーズマニュアル.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('02_%E3%82%BB%E3%83%B3%E3%82%B5%E9%A1%9E%20/%2001_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5%20/%2003_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5_FR%E3%82%B7%E3%83%AA%E3%83%BC%E3%82%BA_%E3%83%A6%E3%83%BC%E3%82%B6%E3%83%BC%E3%82%BA%E3%83%9E%E3%83%8B%E3%83%A5%E3%82%A2%E3%83%AB.pdf')">★</button>
+                    <a href="./docs/06_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8/02_%E3%82%BB%E3%83%B3%E3%82%B5%E9%A1%9E/01_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5/03_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5_FR%E3%82%B7%E3%83%AA%E3%83%BC%E3%82%BA_%E3%83%A6%E3%83%BC%E3%82%B6%E3%83%BC%E3%82%BA%E3%83%9E%E3%83%8B%E3%83%A5%E3%82%A2%E3%83%AB.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="02_%E3%82%BB%E3%83%B3%E3%82%B5%E9%A1%9E%20/%2001_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5%20/%2004_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5_FR%E8%A8%AD%E5%AE%9A%E6%89%8B%E9%A0%86%E6%9B%B8%20%E3%82%B7%E3%83%A7%E3%83%BC%E3%83%88%E3%83%AC%E3%83%B3%E3%82%B8%E6%A8%99%E6%BA%96%28%E5%BF%9C%E7%94%A8%E7%B7%A8%29.pdf">
+            <div class="item-top">
+                <div class="item-name">02_センサ類 / 01_キーエンス_レーザー式レベルセンサ / 04_キーエンス_レーザー式レベルセンサ_FR設定手順書 ショートレンジ標準(応用編).pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('02_%E3%82%BB%E3%83%B3%E3%82%B5%E9%A1%9E%20/%2001_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5%20/%2004_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5_FR%E8%A8%AD%E5%AE%9A%E6%89%8B%E9%A0%86%E6%9B%B8%20%E3%82%B7%E3%83%A7%E3%83%BC%E3%83%88%E3%83%AC%E3%83%B3%E3%82%B8%E6%A8%99%E6%BA%96%28%E5%BF%9C%E7%94%A8%E7%B7%A8%29.pdf')">★</button>
+                    <a href="./docs/06_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8/02_%E3%82%BB%E3%83%B3%E3%82%B5%E9%A1%9E/01_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5/04_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5_FR%E8%A8%AD%E5%AE%9A%E6%89%8B%E9%A0%86%E6%9B%B8%20%E3%82%B7%E3%83%A7%E3%83%BC%E3%83%88%E3%83%AC%E3%83%B3%E3%82%B8%E6%A8%99%E6%BA%96%28%E5%BF%9C%E7%94%A8%E7%B7%A8%29.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="02_%E3%82%BB%E3%83%B3%E3%82%B5%E9%A1%9E%20/%2001_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5%20/%2005_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5_FR-LM20%E7%94%A8%E4%BF%9D%E8%AD%B7%E3%82%AB%E3%83%90%E3%83%BC_FR-LMP1_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name">02_センサ類 / 01_キーエンス_レーザー式レベルセンサ / 05_キーエンス_レーザー式レベルセンサ_FR-LM20用保護カバー_FR-LMP1_取扱説明書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('02_%E3%82%BB%E3%83%B3%E3%82%B5%E9%A1%9E%20/%2001_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5%20/%2005_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5_FR-LM20%E7%94%A8%E4%BF%9D%E8%AD%B7%E3%82%AB%E3%83%90%E3%83%BC_FR-LMP1_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/06_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8/02_%E3%82%BB%E3%83%B3%E3%82%B5%E9%A1%9E/01_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5/05_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5_FR-LM20%E7%94%A8%E4%BF%9D%E8%AD%B7%E3%82%AB%E3%83%90%E3%83%BC_FR-LMP1_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="02_%E3%82%BB%E3%83%B3%E3%82%B5%E9%A1%9E%20/%2001_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5%20/%2006_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5_%E8%A1%A8%E7%A4%BA%E5%99%A8%E8%83%8C%E9%9D%A2%E5%8F%96%E4%BB%98%E5%85%B7_FR-LB2_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name">02_センサ類 / 01_キーエンス_レーザー式レベルセンサ / 06_キーエンス_レーザー式レベルセンサ_表示器背面取付具_FR-LB2_取扱説明書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('02_%E3%82%BB%E3%83%B3%E3%82%B5%E9%A1%9E%20/%2001_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5%20/%2006_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5_%E8%A1%A8%E7%A4%BA%E5%99%A8%E8%83%8C%E9%9D%A2%E5%8F%96%E4%BB%98%E5%85%B7_FR-LB2_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/06_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8/02_%E3%82%BB%E3%83%B3%E3%82%B5%E9%A1%9E/01_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5/06_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5_%E8%A1%A8%E7%A4%BA%E5%99%A8%E8%83%8C%E9%9D%A2%E5%8F%96%E4%BB%98%E5%85%B7_FR-LB2_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="02_%E3%82%BB%E3%83%B3%E3%82%B5%E9%A1%9E%20/%2001_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5%20/%2007_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5_FR-S01%E7%94%A8%E4%BF%9D%E8%AD%B7%E3%82%AB%E3%83%90%E3%83%BC_FR-SP1_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name">02_センサ類 / 01_キーエンス_レーザー式レベルセンサ / 07_キーエンス_レーザー式レベルセンサ_FR-S01用保護カバー_FR-SP1_取扱説明書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('02_%E3%82%BB%E3%83%B3%E3%82%B5%E9%A1%9E%20/%2001_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5%20/%2007_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5_FR-S01%E7%94%A8%E4%BF%9D%E8%AD%B7%E3%82%AB%E3%83%90%E3%83%BC_FR-SP1_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/06_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8/02_%E3%82%BB%E3%83%B3%E3%82%B5%E9%A1%9E/01_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5/07_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%AC%E3%83%BC%E3%82%B6%E3%83%BC%E5%BC%8F%E3%83%AC%E3%83%99%E3%83%AB%E3%82%BB%E3%83%B3%E3%82%B5_FR-S01%E7%94%A8%E4%BF%9D%E8%AD%B7%E3%82%AB%E3%83%90%E3%83%BC_FR-SP1_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="02_%E3%82%BB%E3%83%B3%E3%82%B5%E9%A1%9E%20/%2002_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%82%AF%E3%83%A9%E3%83%B3%E3%83%97%E3%82%AA%E3%83%B3%E5%BC%8F%E6%B5%81%E9%87%8F%E8%A8%88%20/%2001_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%82%AF%E3%83%A9%E3%83%B3%E3%83%97%E3%82%AA%E3%83%B3%E5%BC%8F%E6%B5%81%E9%87%8F%E8%A8%88_FD-R%E3%82%B7%E3%83%AA%E3%83%BC%E3%82%BA_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name">02_センサ類 / 02_キーエンス_クランプオン式流量計 / 01_キーエンス_クランプオン式流量計_FD-Rシリーズ_取扱説明書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('02_%E3%82%BB%E3%83%B3%E3%82%B5%E9%A1%9E%20/%2002_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%82%AF%E3%83%A9%E3%83%B3%E3%83%97%E3%82%AA%E3%83%B3%E5%BC%8F%E6%B5%81%E9%87%8F%E8%A8%88%20/%2001_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%82%AF%E3%83%A9%E3%83%B3%E3%83%97%E3%82%AA%E3%83%B3%E5%BC%8F%E6%B5%81%E9%87%8F%E8%A8%88_FD-R%E3%82%B7%E3%83%AA%E3%83%BC%E3%82%BA_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/06_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8/02_%E3%82%BB%E3%83%B3%E3%82%B5%E9%A1%9E/02_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%82%AF%E3%83%A9%E3%83%B3%E3%83%97%E3%82%AA%E3%83%B3%E5%BC%8F%E6%B5%81%E9%87%8F%E8%A8%88/01_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%82%AF%E3%83%A9%E3%83%B3%E3%83%97%E3%82%AA%E3%83%B3%E5%BC%8F%E6%B5%81%E9%87%8F%E8%A8%88_FD-R%E3%82%B7%E3%83%AA%E3%83%BC%E3%82%BA_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="02_%E3%82%BB%E3%83%B3%E3%82%B5%E9%A1%9E%20/%2002_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%82%AF%E3%83%A9%E3%83%B3%E3%83%97%E3%82%AA%E3%83%B3%E5%BC%8F%E6%B5%81%E9%87%8F%E8%A8%88%20/%2002_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%9E%E3%83%AB%E3%83%81%E3%83%97%E3%83%AD%E3%82%BB%E3%82%B9%E8%A1%A8%E7%A4%BA%E3%83%A6%E3%83%8B%E3%83%83%E3%83%88_FI-1000_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name">02_センサ類 / 02_キーエンス_クランプオン式流量計 / 02_キーエンス_マルチプロセス表示ユニット_FI-1000_取扱説明書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('02_%E3%82%BB%E3%83%B3%E3%82%B5%E9%A1%9E%20/%2002_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%82%AF%E3%83%A9%E3%83%B3%E3%83%97%E3%82%AA%E3%83%B3%E5%BC%8F%E6%B5%81%E9%87%8F%E8%A8%88%20/%2002_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%9E%E3%83%AB%E3%83%81%E3%83%97%E3%83%AD%E3%82%BB%E3%82%B9%E8%A1%A8%E7%A4%BA%E3%83%A6%E3%83%8B%E3%83%83%E3%83%88_FI-1000_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/06_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8/02_%E3%82%BB%E3%83%B3%E3%82%B5%E9%A1%9E/02_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%82%AF%E3%83%A9%E3%83%B3%E3%83%97%E3%82%AA%E3%83%B3%E5%BC%8F%E6%B5%81%E9%87%8F%E8%A8%88/02_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%9E%E3%83%AB%E3%83%81%E3%83%97%E3%83%AD%E3%82%BB%E3%82%B9%E8%A1%A8%E7%A4%BA%E3%83%A6%E3%83%8B%E3%83%83%E3%83%88_FI-1000_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="02_%E3%82%BB%E3%83%B3%E3%82%B5%E9%A1%9E%20/%2003_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E8%80%90%E7%92%B0%E5%A2%83%E3%83%87%E3%82%B8%E3%82%BF%E3%83%AB%E5%9C%A7%E5%8A%9B%E3%82%BB%E3%83%B3%E3%82%B5%20/%2001_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E8%80%90%E7%92%B0%E5%A2%83%E3%83%87%E3%82%B8%E3%82%BF%E3%83%AB%E5%9C%A7%E5%8A%9B%E3%82%BB%E3%83%B3%E3%82%B5_GP-M_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name">02_センサ類 / 03_キーエンス_耐環境デジタル圧力センサ / 01_キーエンス_耐環境デジタル圧力センサ_GP-M_取扱説明書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('02_%E3%82%BB%E3%83%B3%E3%82%B5%E9%A1%9E%20/%2003_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E8%80%90%E7%92%B0%E5%A2%83%E3%83%87%E3%82%B8%E3%82%BF%E3%83%AB%E5%9C%A7%E5%8A%9B%E3%82%BB%E3%83%B3%E3%82%B5%20/%2001_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E8%80%90%E7%92%B0%E5%A2%83%E3%83%87%E3%82%B8%E3%82%BF%E3%83%AB%E5%9C%A7%E5%8A%9B%E3%82%BB%E3%83%B3%E3%82%B5_GP-M_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/06_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8/02_%E3%82%BB%E3%83%B3%E3%82%B5%E9%A1%9E/03_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E8%80%90%E7%92%B0%E5%A2%83%E3%83%87%E3%82%B8%E3%82%BF%E3%83%AB%E5%9C%A7%E5%8A%9B%E3%82%BB%E3%83%B3%E3%82%B5/01_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E8%80%90%E7%92%B0%E5%A2%83%E3%83%87%E3%82%B8%E3%82%BF%E3%83%AB%E5%9C%A7%E5%8A%9B%E3%82%BB%E3%83%B3%E3%82%B5_GP-M_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="02_%E3%82%BB%E3%83%B3%E3%82%B5%E9%A1%9E%20/%2004_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%87%E3%82%B8%E3%82%BF%E3%83%AB%E6%94%BE%E5%B0%84%E6%B8%A9%E5%BA%A6%E3%82%BB%E3%83%B3%E3%82%B5%20/%2001_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%87%E3%82%B8%E3%82%BF%E3%83%AB%E6%94%BE%E5%B0%84%E6%B8%A9%E5%BA%A6%E3%82%BB%E3%83%B3%E3%82%B5_FT_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name">02_センサ類 / 04_キーエンス_デジタル放射温度センサ / 01_キーエンス_デジタル放射温度センサ_FT_取扱説明書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('02_%E3%82%BB%E3%83%B3%E3%82%B5%E9%A1%9E%20/%2004_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%87%E3%82%B8%E3%82%BF%E3%83%AB%E6%94%BE%E5%B0%84%E6%B8%A9%E5%BA%A6%E3%82%BB%E3%83%B3%E3%82%B5%20/%2001_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%87%E3%82%B8%E3%82%BF%E3%83%AB%E6%94%BE%E5%B0%84%E6%B8%A9%E5%BA%A6%E3%82%BB%E3%83%B3%E3%82%B5_FT_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/06_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8/02_%E3%82%BB%E3%83%B3%E3%82%B5%E9%A1%9E/04_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%87%E3%82%B8%E3%82%BF%E3%83%AB%E6%94%BE%E5%B0%84%E6%B8%A9%E5%BA%A6%E3%82%BB%E3%83%B3%E3%82%B5/01_%E3%82%AD%E3%83%BC%E3%82%A8%E3%83%B3%E3%82%B9_%E3%83%87%E3%82%B8%E3%82%BF%E3%83%AB%E6%94%BE%E5%B0%84%E6%B8%A9%E5%BA%A6%E3%82%BB%E3%83%B3%E3%82%B5_FT_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="03_%E3%81%9D%E3%81%AE%E4%BB%96%20/%2001_%E3%83%99%E3%83%B3_%E9%9B%BB%E7%A3%81%E5%BC%81_WS-22_5_WS-22_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name">03_その他 / 01_ベン_電磁弁_WS-22_5_WS-22_取扱説明書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('03_%E3%81%9D%E3%81%AE%E4%BB%96%20/%2001_%E3%83%99%E3%83%B3_%E9%9B%BB%E7%A3%81%E5%BC%81_WS-22_5_WS-22_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/06_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8/03_%E3%81%9D%E3%81%AE%E4%BB%96/01_%E3%83%99%E3%83%B3_%E9%9B%BB%E7%A3%81%E5%BC%81_WS-22_5_WS-22_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="03_%E3%81%9D%E3%81%AE%E4%BB%96%20/%2002_%E5%85%AB%E5%85%89%E9%9B%BB%E6%A9%9F_%E3%83%87%E3%82%B8%E3%82%BF%E3%83%AB%E6%B8%A9%E5%BA%A6%E3%82%BB%E3%83%B3%E3%82%B5_DGC2330_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name"><span class="badge-new">NEW</span>03_その他 / 02_八光電機_デジタル温度センサ_DGC2330_取扱説明書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('03_%E3%81%9D%E3%81%AE%E4%BB%96%20/%2002_%E5%85%AB%E5%85%89%E9%9B%BB%E6%A9%9F_%E3%83%87%E3%82%B8%E3%82%BF%E3%83%AB%E6%B8%A9%E5%BA%A6%E3%82%BB%E3%83%B3%E3%82%B5_DGC2330_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/06_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8/03_%E3%81%9D%E3%81%AE%E4%BB%96/02_%E5%85%AB%E5%85%89%E9%9B%BB%E6%A9%9F_%E3%83%87%E3%82%B8%E3%82%BF%E3%83%AB%E6%B8%A9%E5%BA%A6%E3%82%BB%E3%83%B3%E3%82%B5_DGC2330_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="03_%E3%81%9D%E3%81%AE%E4%BB%96%20/%2003_%E5%85%AB%E5%85%89%E9%9B%BB%E6%A9%9F_%E3%82%B7%E3%83%AA%E3%82%B3%E3%83%B3%E3%83%A9%E3%83%90%E3%83%BC%E3%83%92%E3%83%BC%E3%82%BF%E3%83%BC_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name"><span class="badge-new">NEW</span>03_その他 / 03_八光電機_シリコンラバーヒーター_取扱説明書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('03_%E3%81%9D%E3%81%AE%E4%BB%96%20/%2003_%E5%85%AB%E5%85%89%E9%9B%BB%E6%A9%9F_%E3%82%B7%E3%83%AA%E3%82%B3%E3%83%B3%E3%83%A9%E3%83%90%E3%83%BC%E3%83%92%E3%83%BC%E3%82%BF%E3%83%BC_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/06_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8/03_%E3%81%9D%E3%81%AE%E4%BB%96/03_%E5%85%AB%E5%85%89%E9%9B%BB%E6%A9%9F_%E3%82%B7%E3%83%AA%E3%82%B3%E3%83%B3%E3%83%A9%E3%83%90%E3%83%BC%E3%83%92%E3%83%BC%E3%82%BF%E3%83%BC_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="03_%E3%81%9D%E3%81%AE%E4%BB%96%20/%2004_%E5%85%AB%E5%85%89%E9%9B%BB%E6%A9%9F_%E3%83%89%E3%83%A9%E3%83%A0%E7%BC%B6%E7%94%A8%E3%83%A9%E3%83%90%E3%83%BC%E3%83%92%E3%83%BC%E3%82%BF%E3%83%BC_SBH0720_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name"><span class="badge-new">NEW</span>03_その他 / 04_八光電機_ドラム缶用ラバーヒーター_SBH0720_取扱説明書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('03_%E3%81%9D%E3%81%AE%E4%BB%96%20/%2004_%E5%85%AB%E5%85%89%E9%9B%BB%E6%A9%9F_%E3%83%89%E3%83%A9%E3%83%A0%E7%BC%B6%E7%94%A8%E3%83%A9%E3%83%90%E3%83%BC%E3%83%92%E3%83%BC%E3%82%BF%E3%83%BC_SBH0720_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/06_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8/03_%E3%81%9D%E3%81%AE%E4%BB%96/04_%E5%85%AB%E5%85%89%E9%9B%BB%E6%A9%9F_%E3%83%89%E3%83%A9%E3%83%A0%E7%BC%B6%E7%94%A8%E3%83%A9%E3%83%90%E3%83%BC%E3%83%92%E3%83%BC%E3%82%BF%E3%83%BC_SBH0720_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="03_%E3%81%9D%E3%81%AE%E4%BB%96%20/%2005_%E5%85%AB%E5%85%89%E9%9B%BB%E6%A9%9F_%E4%BF%9D%E6%B8%A9%E3%82%B8%E3%83%A3%E3%82%B1%E3%83%83%E3%83%88_NGJ0021_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name"><span class="badge-new">NEW</span>03_その他 / 05_八光電機_保温ジャケット_NGJ0021_取扱説明書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('03_%E3%81%9D%E3%81%AE%E4%BB%96%20/%2005_%E5%85%AB%E5%85%89%E9%9B%BB%E6%A9%9F_%E4%BF%9D%E6%B8%A9%E3%82%B8%E3%83%A3%E3%82%B1%E3%83%83%E3%83%88_NGJ0021_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/06_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8/03_%E3%81%9D%E3%81%AE%E4%BB%96/05_%E5%85%AB%E5%85%89%E9%9B%BB%E6%A9%9F_%E4%BF%9D%E6%B8%A9%E3%82%B8%E3%83%A3%E3%82%B1%E3%83%83%E3%83%88_NGJ0021_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="03_%E3%81%9D%E3%81%AE%E4%BB%96%20/%2006_%E5%85%AB%E5%85%89%E9%9B%BB%E6%A9%9F_%E7%86%B1%E9%A2%A8%E6%A9%9F_HOTWIND_%E6%97%A5%E6%9C%AC%E8%AA%9E%E5%8F%96%E8%AA%AC.pdf">
+            <div class="item-top">
+                <div class="item-name"><span class="badge-new">NEW</span>03_その他 / 06_八光電機_熱風機_HOTWIND_日本語取説.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('03_%E3%81%9D%E3%81%AE%E4%BB%96%20/%2006_%E5%85%AB%E5%85%89%E9%9B%BB%E6%A9%9F_%E7%86%B1%E9%A2%A8%E6%A9%9F_HOTWIND_%E6%97%A5%E6%9C%AC%E8%AA%9E%E5%8F%96%E8%AA%AC.pdf')">★</button>
+                    <a href="./docs/06_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8/03_%E3%81%9D%E3%81%AE%E4%BB%96/06_%E5%85%AB%E5%85%89%E9%9B%BB%E6%A9%9F_%E7%86%B1%E9%A2%A8%E6%A9%9F_HOTWIND_%E6%97%A5%E6%9C%AC%E8%AA%9E%E5%8F%96%E8%AA%AC.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="03_%E3%81%9D%E3%81%AE%E4%BB%96%20/%2007_%E6%98%AD%E5%92%8C%E6%8A%80%E7%A0%94%E5%B7%A5%E6%A5%AD_%E3%82%B9%E3%82%A4%E3%83%99%E3%83%AB%E3%82%B8%E3%83%A7%E3%82%A4%E3%83%B3%E3%83%88_S3_PK_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name">03_その他 / 07_昭和技研工業_スイベルジョイント_S3_PK_取扱説明書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('03_%E3%81%9D%E3%81%AE%E4%BB%96%20/%2007_%E6%98%AD%E5%92%8C%E6%8A%80%E7%A0%94%E5%B7%A5%E6%A5%AD_%E3%82%B9%E3%82%A4%E3%83%99%E3%83%AB%E3%82%B8%E3%83%A7%E3%82%A4%E3%83%B3%E3%83%88_S3_PK_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/06_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8/03_%E3%81%9D%E3%81%AE%E4%BB%96/07_%E6%98%AD%E5%92%8C%E6%8A%80%E7%A0%94%E5%B7%A5%E6%A5%AD_%E3%82%B9%E3%82%A4%E3%83%99%E3%83%AB%E3%82%B8%E3%83%A7%E3%82%A4%E3%83%B3%E3%83%88_S3_PK_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="03_%E3%81%9D%E3%81%AE%E4%BB%96%20/%2008_TLV_%E3%83%95%E3%83%AA%E3%83%BC%E3%83%95%E3%83%AD%E3%83%BC%E3%83%88%E3%82%B9%E3%83%81%E3%83%BC%E3%83%A0%E3%83%88%E3%83%A9%E3%83%83%E3%83%97_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name"><span class="badge-new">NEW</span>03_その他 / 08_TLV_フリーフロートスチームトラップ_取扱説明書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('03_%E3%81%9D%E3%81%AE%E4%BB%96%20/%2008_TLV_%E3%83%95%E3%83%AA%E3%83%BC%E3%83%95%E3%83%AD%E3%83%BC%E3%83%88%E3%82%B9%E3%83%81%E3%83%BC%E3%83%A0%E3%83%88%E3%83%A9%E3%83%83%E3%83%97_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/06_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8/03_%E3%81%9D%E3%81%AE%E4%BB%96/08_TLV_%E3%83%95%E3%83%AA%E3%83%BC%E3%83%95%E3%83%AD%E3%83%BC%E3%83%88%E3%82%B9%E3%83%81%E3%83%BC%E3%83%A0%E3%83%88%E3%83%A9%E3%83%83%E3%83%97_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="03_%E3%81%9D%E3%81%AE%E4%BB%96%20/%2009_%E3%83%9F%E3%83%A4%E3%83%AF%E3%82%AD_%E3%82%B5%E3%82%A4%E3%83%88%E3%82%B0%E3%83%A9%E3%82%B9_T3%E5%9E%8B_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name"><span class="badge-new">NEW</span>03_その他 / 09_ミヤワキ_サイトグラス_T3型_取扱説明書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('03_%E3%81%9D%E3%81%AE%E4%BB%96%20/%2009_%E3%83%9F%E3%83%A4%E3%83%AF%E3%82%AD_%E3%82%B5%E3%82%A4%E3%83%88%E3%82%B0%E3%83%A9%E3%82%B9_T3%E5%9E%8B_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/06_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8/03_%E3%81%9D%E3%81%AE%E4%BB%96/09_%E3%83%9F%E3%83%A4%E3%83%AF%E3%82%AD_%E3%82%B5%E3%82%A4%E3%83%88%E3%82%B0%E3%83%A9%E3%82%B9_T3%E5%9E%8B_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="03_%E3%81%9D%E3%81%AE%E4%BB%96%20/%2010_%E3%83%9F%E3%83%A4%E3%83%AF%E3%82%AD_%E3%82%A4%E3%83%B3%E3%83%A9%E3%82%A4%E3%83%B3%E3%83%81%E3%83%A3%E3%83%83%E3%82%AD%E5%BC%81_CVC3_CVC3R_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name"><span class="badge-new">NEW</span>03_その他 / 10_ミヤワキ_インラインチャッキ弁_CVC3_CVC3R_取扱説明書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('03_%E3%81%9D%E3%81%AE%E4%BB%96%20/%2010_%E3%83%9F%E3%83%A4%E3%83%AF%E3%82%AD_%E3%82%A4%E3%83%B3%E3%83%A9%E3%82%A4%E3%83%B3%E3%83%81%E3%83%A3%E3%83%83%E3%82%AD%E5%BC%81_CVC3_CVC3R_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/06_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8/03_%E3%81%9D%E3%81%AE%E4%BB%96/10_%E3%83%9F%E3%83%A4%E3%83%AF%E3%82%AD_%E3%82%A4%E3%83%B3%E3%83%A9%E3%82%A4%E3%83%B3%E3%83%81%E3%83%A3%E3%83%83%E3%82%AD%E5%BC%81_CVC3_CVC3R_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="03_%E3%81%9D%E3%81%AE%E4%BB%96%20/%2011_%E3%82%AA%E3%83%A0%E3%83%AD%E3%83%B3_%E3%83%AD%E3%83%BC%E3%83%97%E3%83%97%E3%83%AB%E9%9D%9E%E5%B8%B8%E5%81%9C%E6%AD%A2%E3%82%B9%E3%82%A4%E3%83%83%E3%83%81_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8%28Japan%29.pdf">
+            <div class="item-top">
+                <div class="item-name"><span class="badge-new">NEW</span>03_その他 / 11_オムロン_ローププル非常停止スイッチ_取扱説明書(Japan).pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('03_%E3%81%9D%E3%81%AE%E4%BB%96%20/%2011_%E3%82%AA%E3%83%A0%E3%83%AD%E3%83%B3_%E3%83%AD%E3%83%BC%E3%83%97%E3%83%97%E3%83%AB%E9%9D%9E%E5%B8%B8%E5%81%9C%E6%AD%A2%E3%82%B9%E3%82%A4%E3%83%83%E3%83%81_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8%28Japan%29.pdf')">★</button>
+                    <a href="./docs/06_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8/03_%E3%81%9D%E3%81%AE%E4%BB%96/11_%E3%82%AA%E3%83%A0%E3%83%AD%E3%83%B3_%E3%83%AD%E3%83%BC%E3%83%97%E3%83%97%E3%83%AB%E9%9D%9E%E5%B8%B8%E5%81%9C%E6%AD%A2%E3%82%B9%E3%82%A4%E3%83%83%E3%83%81_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8%28Japan%29.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="03_%E3%81%9D%E3%81%AE%E4%BB%96%20/%2012_%E3%82%AA%E3%83%A0%E3%83%AD%E3%83%B3_%E3%83%AD%E3%83%BC%E3%83%97%E3%83%97%E3%83%AB%E9%9D%9E%E5%B8%B8%E5%81%9C%E6%AD%A2%E3%82%B9%E3%82%A4%E3%83%83%E3%83%81_%E3%83%AD%E3%83%BC%E3%83%97%E3%83%86%E3%83%B3%E3%82%B7%E3%83%A7%E3%83%B3%E3%82%AD%E3%83%83%E3%83%88%E5%8F%96%E4%BB%98.pdf">
+            <div class="item-top">
+                <div class="item-name">03_その他 / 12_オムロン_ローププル非常停止スイッチ_ロープテンションキット取付.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('03_%E3%81%9D%E3%81%AE%E4%BB%96%20/%2012_%E3%82%AA%E3%83%A0%E3%83%AD%E3%83%B3_%E3%83%AD%E3%83%BC%E3%83%97%E3%83%97%E3%83%AB%E9%9D%9E%E5%B8%B8%E5%81%9C%E6%AD%A2%E3%82%B9%E3%82%A4%E3%83%83%E3%83%81_%E3%83%AD%E3%83%BC%E3%83%97%E3%83%86%E3%83%B3%E3%82%B7%E3%83%A7%E3%83%B3%E3%82%AD%E3%83%83%E3%83%88%E5%8F%96%E4%BB%98.pdf')">★</button>
+                    <a href="./docs/06_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8/03_%E3%81%9D%E3%81%AE%E4%BB%96/12_%E3%82%AA%E3%83%A0%E3%83%AD%E3%83%B3_%E3%83%AD%E3%83%BC%E3%83%97%E3%83%97%E3%83%AB%E9%9D%9E%E5%B8%B8%E5%81%9C%E6%AD%A2%E3%82%B9%E3%82%A4%E3%83%83%E3%83%81_%E3%83%AD%E3%83%BC%E3%83%97%E3%83%86%E3%83%B3%E3%82%B7%E3%83%A7%E3%83%B3%E3%82%AD%E3%83%83%E3%83%88%E5%8F%96%E4%BB%98.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="04_%E3%83%90%E3%83%AB%E3%82%AF%E3%82%BF%E3%83%B3%E3%82%AF%20/%2001_%E3%83%99%E3%83%BC%E3%83%91%E3%83%A9%E3%82%A4%E3%82%B6%E2%80%97MIN-ED_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name">04_バルクタンク / 01_ベーパライザ‗MIN-ED_取扱説明書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('04_%E3%83%90%E3%83%AB%E3%82%AF%E3%82%BF%E3%83%B3%E3%82%AF%20/%2001_%E3%83%99%E3%83%BC%E3%83%91%E3%83%A9%E3%82%A4%E3%82%B6%E2%80%97MIN-ED_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/06_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8/04_%E3%83%90%E3%83%AB%E3%82%AF%E3%82%BF%E3%83%B3%E3%82%AF/01_%E3%83%99%E3%83%BC%E3%83%91%E3%83%A9%E3%82%A4%E3%82%B6%E2%80%97MIN-ED_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="04_%E3%83%90%E3%83%AB%E3%82%AF%E3%82%BF%E3%83%B3%E3%82%AF%20/%2002%E2%80%97%E3%82%AC%E3%82%B9%E6%A4%9C%E7%9F%A5%E8%AD%A6%E5%A0%B1%E5%99%A8%E2%80%97B780_220V_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name">04_バルクタンク / 02‗ガス検知警報器‗B780_220V_取扱説明書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('04_%E3%83%90%E3%83%AB%E3%82%AF%E3%82%BF%E3%83%B3%E3%82%AF%20/%2002%E2%80%97%E3%82%AC%E3%82%B9%E6%A4%9C%E7%9F%A5%E8%AD%A6%E5%A0%B1%E5%99%A8%E2%80%97B780_220V_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/06_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8/04_%E3%83%90%E3%83%AB%E3%82%AF%E3%82%BF%E3%83%B3%E3%82%AF/02%E2%80%97%E3%82%AC%E3%82%B9%E6%A4%9C%E7%9F%A5%E8%AD%A6%E5%A0%B1%E5%99%A8%E2%80%97B780_220V_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="04_%E3%83%90%E3%83%AB%E3%82%AF%E3%82%BF%E3%83%B3%E3%82%AF%20/%2003%E2%80%97%E6%A5%AD%E5%8B%99%E7%94%A8%E3%82%AC%E3%82%B9%E6%A4%9C%E7%9F%A5%E8%AD%A6%E5%A0%B1%E5%99%A8%E7%94%A8%E6%A4%9C%E7%9F%A5%E9%83%A8KD-5G%E3%83%BB5T_%E5%8F%96%E4%BB%98%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name">04_バルクタンク / 03‗業務用ガス検知警報器用検知部KD-5G・5T_取付説明書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('04_%E3%83%90%E3%83%AB%E3%82%AF%E3%82%BF%E3%83%B3%E3%82%AF%20/%2003%E2%80%97%E6%A5%AD%E5%8B%99%E7%94%A8%E3%82%AC%E3%82%B9%E6%A4%9C%E7%9F%A5%E8%AD%A6%E5%A0%B1%E5%99%A8%E7%94%A8%E6%A4%9C%E7%9F%A5%E9%83%A8KD-5G%E3%83%BB5T_%E5%8F%96%E4%BB%98%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/06_%E5%8F%96%E6%89%B1%E8%AA%AC%E6%98%8E%E6%9B%B8/04_%E3%83%90%E3%83%AB%E3%82%AF%E3%82%BF%E3%83%B3%E3%82%AF/03%E2%80%97%E6%A5%AD%E5%8B%99%E7%94%A8%E3%82%AC%E3%82%B9%E6%A4%9C%E7%9F%A5%E8%AD%A6%E5%A0%B1%E5%99%A8%E7%94%A8%E6%A4%9C%E7%9F%A5%E9%83%A8KD-5G%E3%83%BB5T_%E5%8F%96%E4%BB%98%E8%AA%AC%E6%98%8E%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="footer-name">株式会社サニックス資源開発グループ ひびき工場</div>
+    <a href="index.html" class="back-btn">← メインメニューに戻る</a>
+    <script>
+        function search() {
+            let q = document.getElementById('q').value.toLowerCase().split(/[ 　]+/);
+            let items = document.getElementsByClassName('item');
+            for (let i of items) {
+                let t = i.innerText.toLowerCase();
+                i.style.display = q.every(w => t.includes(w)) ? "" : "none";
+            }
+        }
+        function toggleFav(id) {
+            let favs = JSON.parse(localStorage.getItem('favs') || '[]');
+            if (favs.includes(id)) favs = favs.filter(f => f !== id);
+            else favs.push(id);
+            localStorage.setItem('favs', JSON.stringify(favs));
+            loadFavs();
+        }
+        function loadFavs() {
+            let favs = JSON.parse(localStorage.getItem('favs') || '[]');
+            document.querySelectorAll('.item').forEach(el => {
+                const btn = el.querySelector('.fav-btn');
+                if (favs.includes(el.dataset.id)) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+        }
+    </script>
+</body></html>

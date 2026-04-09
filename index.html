@@ -1,0 +1,73 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main Menu</title>
+    <style>
+        :root { --primary: #1a365d; --bg: #f4f7f9; --card: #ffffff; --text: #333; --accent: #2ecc71; }
+        [data-theme="dark"] { --primary: #1a202c; --bg: #1a202c; --card: #2d3748; --text: #f7fafc; --accent: #48bb78; }
+        
+        body { font-family: sans-serif; margin: 0; background: var(--bg); color: var(--text); padding-bottom: 80px; transition: 0.3s; }
+        .auth-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #1a365d; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
+        .header { background: var(--primary); color: white; padding: 20px 15px; position: sticky; top: 0; z-index: 100; text-align: center; }
+        .search-box { width: 90%; padding: 12px; font-size: 16px; border-radius: 25px; border: 1px solid #ddd; margin-top: 10px; outline: none; }
+        
+        .menu-container { display: grid; grid-template-columns: 1fr; gap: 12px; padding: 15px; }
+        .menu-btn { background: var(--card); padding: 20px; border-radius: 10px; text-decoration: none; color: var(--text); font-weight: bold; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid var(--primary); }
+        
+        .item { background: var(--card); margin: 8px 12px; padding: 15px; border-radius: 8px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .item-top { display: flex; justify-content: space-between; align-items: center; }
+        .item-name { font-size: 14px; word-break: break-all; flex: 1; }
+        
+        .btn-group { display: flex; gap: 10px; align-items: center; }
+        .btn { background: var(--primary); color: white; text-decoration: none; padding: 8px 15px; border-radius: 5px; font-size: 14px; font-weight: bold; }
+        .fav-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #ccc; padding: 0; line-height: 1; }
+        .fav-btn.active { color: #f1c40f; }
+        
+        .badge-new { background: #e53e3e; color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-right: 5px; vertical-align: middle; }
+        .footer-name { text-align: center; color: #718096; font-size: 13px; margin-top: 30px; font-weight: bold; }
+        
+        .theme-toggle { position: fixed; bottom: 20px; right: 20px; background: var(--primary); color: white; border: none; width: 50px; height: 50px; border-radius: 50%; font-size: 20px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 200; }
+        input[type="password"] { padding: 12px; font-size: 16px; border-radius: 8px; border: 1px solid #ccc; margin-bottom: 15px; width: 70%; text-align: center; color: #333; }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
+    <div id="auth" class="auth-screen">
+        <h2 style="margin-bottom:20px;">Please enter Password</h2>
+        <input type="password" id="passInput" placeholder="Password">
+        <button style="padding:12px 40px; border-radius:25px; border:none; background:var(--accent); color:white; font-weight:bold; cursor:pointer;" onclick="checkPass()">Login</button>
+    </div>
+    <script>
+        function checkPass() {
+            if (document.getElementById('passInput').value === 'sanixskg393290') {
+                document.getElementById('auth').style.display = 'none';
+                sessionStorage.setItem('isLoggedIn', 'true');
+            } else { alert('Incorrect Password'); }
+        }
+        function toggleTheme() {
+            const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+        }
+        window.onload = function() {
+            if (localStorage.getItem('theme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+            document.getElementById('passInput').addEventListener('keypress', (e) => { if(e.key==='Enter') checkPass(); });
+            if (sessionStorage.getItem('isLoggedIn') === 'true') document.getElementById('auth').style.display = 'none';
+            if (typeof loadFavs === 'function') loadFavs();
+        };
+    </script>
+
+    <div class="header">
+        <h1 style="margin:0; font-size:22px;">Solid-Fuel Project</h1>
+        <p style="margin:5px 0 0 0; font-size:14px; opacity:0.8;">図面データベース</p>
+    </div>
+    <div style="padding: 15px 15px 0 15px; font-size: 14px; color: #666; font-weight: bold;">カテゴリーを選択してください</div>
+    <div class="menu-container">
+<a href="01_設備図面_PDF.html" class="menu-btn"><span>📂 01_設備図面_PDF</span><span class="count-badge">232 items</span></a><a href="02_電気図面_PDF.html" class="menu-btn"><span>📂 02_電気図面_PDF</span><span class="count-badge">19 items</span></a><a href="03_製作図面.html" class="menu-btn"><span>📂 03_製作図面</span><span class="count-badge">92 items</span></a><a href="04_機器図面_PDF.html" class="menu-btn"><span>📂 04_機器図面_PDF</span><span class="count-badge">9 items</span></a><a href="05_機器仕様.html" class="menu-btn"><span>📂 05_機器仕様</span><span class="count-badge">15 items</span></a><a href="06_取扱説明書.html" class="menu-btn"><span>📂 06_取扱説明書</span><span class="count-badge">38 items</span></a><a href="07_CAD図面.html" class="menu-btn"><span>📂 07_CAD図面</span><span class="count-badge">378 items</span></a>
+    </div>
+    <div style="text-align:center; color:#999; font-size:12px; margin-top:20px;">Total Files: 783</div>
+    <div class="footer-name">株式会社サニックス資源開発グループ ひびき工場</div>
+</body></html>

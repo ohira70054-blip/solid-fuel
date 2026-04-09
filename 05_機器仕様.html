@@ -1,0 +1,250 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>05_機器仕様 - List</title>
+    <style>
+        :root { --primary: #1a365d; --bg: #f4f7f9; --card: #ffffff; --text: #333; --accent: #2ecc71; }
+        [data-theme="dark"] { --primary: #1a202c; --bg: #1a202c; --card: #2d3748; --text: #f7fafc; --accent: #48bb78; }
+        
+        body { font-family: sans-serif; margin: 0; background: var(--bg); color: var(--text); padding-bottom: 80px; transition: 0.3s; }
+        .auth-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #1a365d; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
+        .header { background: var(--primary); color: white; padding: 20px 15px; position: sticky; top: 0; z-index: 100; text-align: center; }
+        .search-box { width: 90%; padding: 12px; font-size: 16px; border-radius: 25px; border: 1px solid #ddd; margin-top: 10px; outline: none; }
+        
+        .menu-container { display: grid; grid-template-columns: 1fr; gap: 12px; padding: 15px; }
+        .menu-btn { background: var(--card); padding: 20px; border-radius: 10px; text-decoration: none; color: var(--text); font-weight: bold; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid var(--primary); }
+        
+        .item { background: var(--card); margin: 8px 12px; padding: 15px; border-radius: 8px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .item-top { display: flex; justify-content: space-between; align-items: center; }
+        .item-name { font-size: 14px; word-break: break-all; flex: 1; }
+        
+        .btn-group { display: flex; gap: 10px; align-items: center; }
+        .btn { background: var(--primary); color: white; text-decoration: none; padding: 8px 15px; border-radius: 5px; font-size: 14px; font-weight: bold; }
+        .fav-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #ccc; padding: 0; line-height: 1; }
+        .fav-btn.active { color: #f1c40f; }
+        
+        .badge-new { background: #e53e3e; color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-right: 5px; vertical-align: middle; }
+        .footer-name { text-align: center; color: #718096; font-size: 13px; margin-top: 30px; font-weight: bold; }
+        
+        .theme-toggle { position: fixed; bottom: 20px; right: 20px; background: var(--primary); color: white; border: none; width: 50px; height: 50px; border-radius: 50%; font-size: 20px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 200; }
+        input[type="password"] { padding: 12px; font-size: 16px; border-radius: 8px; border: 1px solid #ccc; margin-bottom: 15px; width: 70%; text-align: center; color: #333; }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
+    <div id="auth" class="auth-screen">
+        <h2 style="margin-bottom:20px;">Please enter Password</h2>
+        <input type="password" id="passInput" placeholder="Password">
+        <button style="padding:12px 40px; border-radius:25px; border:none; background:var(--accent); color:white; font-weight:bold; cursor:pointer;" onclick="checkPass()">Login</button>
+    </div>
+    <script>
+        function checkPass() {
+            if (document.getElementById('passInput').value === 'sanixskg3290') {
+                document.getElementById('auth').style.display = 'none';
+                sessionStorage.setItem('isLoggedIn', 'true');
+            } else { alert('Incorrect Password'); }
+        }
+        function toggleTheme() {
+            const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+        }
+        window.onload = function() {
+            if (localStorage.getItem('theme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+            document.getElementById('passInput').addEventListener('keypress', (e) => { if(e.key==='Enter') checkPass(); });
+            if (sessionStorage.getItem('isLoggedIn') === 'true') document.getElementById('auth').style.display = 'none';
+            if (typeof loadFavs === 'function') loadFavs();
+        };
+    </script>
+
+    <div class="header">
+        <div style="font-size: 20px; font-weight: bold;">05_機器仕様</div>
+        <input type="text" id="q" class="search-box" placeholder="スペース区切りで検索..." onkeyup="search()">
+    </div>
+    <div id="mainList">
+    
+        <div class="item" data-id="01_%E8%8D%8F%E5%8E%9F%E8%A3%BD%E4%BD%9C%E6%89%80_50DNA61.5_%E6%89%BF%E8%AA%8D%E5%9B%B3.pdf">
+            <div class="item-top">
+                <div class="item-name">01_荏原製作所_50DNA61.5_承認図.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('01_%E8%8D%8F%E5%8E%9F%E8%A3%BD%E4%BD%9C%E6%89%80_50DNA61.5_%E6%89%BF%E8%AA%8D%E5%9B%B3.pdf')">★</button>
+                    <a href="./docs/05_%E6%A9%9F%E5%99%A8%E4%BB%95%E6%A7%98/01_%E8%8D%8F%E5%8E%9F%E8%A3%BD%E4%BD%9C%E6%89%80_50DNA61.5_%E6%89%BF%E8%AA%8D%E5%9B%B3.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="02_%E8%8D%8F%E5%8E%9F%E8%A3%BD%E4%BD%9C%E6%89%80_50LPD61.5E_%E6%89%BF%E8%AA%8D%E5%9B%B3.pdf">
+            <div class="item-top">
+                <div class="item-name">02_荏原製作所_50LPD61.5E_承認図.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('02_%E8%8D%8F%E5%8E%9F%E8%A3%BD%E4%BD%9C%E6%89%80_50LPD61.5E_%E6%89%BF%E8%AA%8D%E5%9B%B3.pdf')">★</button>
+                    <a href="./docs/05_%E6%A9%9F%E5%99%A8%E4%BB%95%E6%A7%98/02_%E8%8D%8F%E5%8E%9F%E8%A3%BD%E4%BD%9C%E6%89%80_50LPD61.5E_%E6%89%BF%E8%AA%8D%E5%9B%B3.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="03_%E8%8D%8F%E5%8E%9F%E8%A3%BD%E4%BD%9C%E6%89%80_5RKE61.5B_%E6%89%BF%E8%AA%8D%E5%9B%B3.pdf">
+            <div class="item-top">
+                <div class="item-name">03_荏原製作所_5RKE61.5B_承認図.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('03_%E8%8D%8F%E5%8E%9F%E8%A3%BD%E4%BD%9C%E6%89%80_5RKE61.5B_%E6%89%BF%E8%AA%8D%E5%9B%B3.pdf')">★</button>
+                    <a href="./docs/05_%E6%A9%9F%E5%99%A8%E4%BB%95%E6%A7%98/03_%E8%8D%8F%E5%8E%9F%E8%A3%BD%E4%BD%9C%E6%89%80_5RKE61.5B_%E6%89%BF%E8%AA%8D%E5%9B%B3.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="04_%E9%B6%B4%E8%A6%8B%E8%A3%BD%E4%BD%9C%E6%89%80_50PU2.75_%E4%BB%95%E6%A7%98%E5%9B%B3.pdf">
+            <div class="item-top">
+                <div class="item-name">04_鶴見製作所_50PU2.75_仕様図.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('04_%E9%B6%B4%E8%A6%8B%E8%A3%BD%E4%BD%9C%E6%89%80_50PU2.75_%E4%BB%95%E6%A7%98%E5%9B%B3.pdf')">★</button>
+                    <a href="./docs/05_%E6%A9%9F%E5%99%A8%E4%BB%95%E6%A7%98/04_%E9%B6%B4%E8%A6%8B%E8%A3%BD%E4%BD%9C%E6%89%80_50PU2.75_%E4%BB%95%E6%A7%98%E5%9B%B3.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="05_%E9%B6%B4%E8%A6%8B%E8%A3%BD%E4%BD%9C%E6%89%80_80PUT22.2_%E4%BB%95%E6%A7%98%E5%9B%B3.pdf">
+            <div class="item-top">
+                <div class="item-name">05_鶴見製作所_80PUT22.2_仕様図.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('05_%E9%B6%B4%E8%A6%8B%E8%A3%BD%E4%BD%9C%E6%89%80_80PUT22.2_%E4%BB%95%E6%A7%98%E5%9B%B3.pdf')">★</button>
+                    <a href="./docs/05_%E6%A9%9F%E5%99%A8%E4%BB%95%E6%A7%98/05_%E9%B6%B4%E8%A6%8B%E8%A3%BD%E4%BD%9C%E6%89%80_80PUT22.2_%E4%BB%95%E6%A7%98%E5%9B%B3.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="06_%E6%97%A5%E6%A9%9F%E8%A3%85%E3%82%A8%E3%82%A4%E3%82%B3%E3%83%BC_FG40-MCV_%E6%80%A7%E8%83%BD%E6%9B%B2%E7%B7%9A.pdf">
+            <div class="item-top">
+                <div class="item-name">06_日機装エイコー_FG40-MCV_性能曲線.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('06_%E6%97%A5%E6%A9%9F%E8%A3%85%E3%82%A8%E3%82%A4%E3%82%B3%E3%83%BC_FG40-MCV_%E6%80%A7%E8%83%BD%E6%9B%B2%E7%B7%9A.pdf')">★</button>
+                    <a href="./docs/05_%E6%A9%9F%E5%99%A8%E4%BB%95%E6%A7%98/06_%E6%97%A5%E6%A9%9F%E8%A3%85%E3%82%A8%E3%82%A4%E3%82%B3%E3%83%BC_FG40-MCV_%E6%80%A7%E8%83%BD%E6%9B%B2%E7%B7%9A.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="07_%E3%82%A4%E3%83%AF%E3%82%AD_TD-F8VSFF3-04_%E6%A8%99%E6%BA%96%E6%80%A7%E8%83%BD%E6%9B%B2%E7%B7%9A.pdf">
+            <div class="item-top">
+                <div class="item-name">07_イワキ_TD-F8VSFF3-04_標準性能曲線.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('07_%E3%82%A4%E3%83%AF%E3%82%AD_TD-F8VSFF3-04_%E6%A8%99%E6%BA%96%E6%80%A7%E8%83%BD%E6%9B%B2%E7%B7%9A.pdf')">★</button>
+                    <a href="./docs/05_%E6%A9%9F%E5%99%A8%E4%BB%95%E6%A7%98/07_%E3%82%A4%E3%83%AF%E3%82%AD_TD-F8VSFF3-04_%E6%A8%99%E6%BA%96%E6%80%A7%E8%83%BD%E6%9B%B2%E7%B7%9A.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="08_%E5%85%B5%E7%A5%9E%E8%A3%85%E5%82%99_2NYS30_288882_%E7%B4%8D%E5%85%A5%E4%BB%95%E6%A7%98%E6%9B%B8.PDF">
+            <div class="item-top">
+                <div class="item-name">08_兵神装備_2NYS30_288882_納入仕様書.PDF</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('08_%E5%85%B5%E7%A5%9E%E8%A3%85%E5%82%99_2NYS30_288882_%E7%B4%8D%E5%85%A5%E4%BB%95%E6%A7%98%E6%9B%B8.PDF')">★</button>
+                    <a href="./docs/05_%E6%A9%9F%E5%99%A8%E4%BB%95%E6%A7%98/08_%E5%85%B5%E7%A5%9E%E8%A3%85%E5%82%99_2NYS30_288882_%E7%B4%8D%E5%85%A5%E4%BB%95%E6%A7%98%E6%9B%B8.PDF" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="09_%E5%85%B5%E7%A5%9E%E8%A3%85%E5%82%99_CY10_290898_%E7%B4%8D%E5%85%A5%E4%BB%95%E6%A7%98%E6%9B%B8.PDF">
+            <div class="item-top">
+                <div class="item-name">09_兵神装備_CY10_290898_納入仕様書.PDF</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('09_%E5%85%B5%E7%A5%9E%E8%A3%85%E5%82%99_CY10_290898_%E7%B4%8D%E5%85%A5%E4%BB%95%E6%A7%98%E6%9B%B8.PDF')">★</button>
+                    <a href="./docs/05_%E6%A9%9F%E5%99%A8%E4%BB%95%E6%A7%98/09_%E5%85%B5%E7%A5%9E%E8%A3%85%E5%82%99_CY10_290898_%E7%B4%8D%E5%85%A5%E4%BB%95%E6%A7%98%E6%9B%B8.PDF" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="10_%E3%82%A2%E3%83%B3%E3%83%AC%E3%83%83%E3%83%88_BS32%E2%80%97%E7%B4%8D%E5%85%A5%E4%BB%95%E6%A7%98%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name">10_アンレット_BS32‗納入仕様書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('10_%E3%82%A2%E3%83%B3%E3%83%AC%E3%83%83%E3%83%88_BS32%E2%80%97%E7%B4%8D%E5%85%A5%E4%BB%95%E6%A7%98%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/05_%E6%A9%9F%E5%99%A8%E4%BB%95%E6%A7%98/10_%E3%82%A2%E3%83%B3%E3%83%AC%E3%83%83%E3%83%88_BS32%E2%80%97%E7%B4%8D%E5%85%A5%E4%BB%95%E6%A7%98%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="11_TLV_%E3%82%B9%E3%83%81%E3%83%BC%E3%83%A0%E3%83%88%E3%83%A9%E3%83%83%E3%83%97_J5X_%E8%A3%BD%E5%93%81%E4%BB%95%E6%A7%98%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name"><span class="badge-new">NEW</span>11_TLV_スチームトラップ_J5X_製品仕様書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('11_TLV_%E3%82%B9%E3%83%81%E3%83%BC%E3%83%A0%E3%83%88%E3%83%A9%E3%83%83%E3%83%97_J5X_%E8%A3%BD%E5%93%81%E4%BB%95%E6%A7%98%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/05_%E6%A9%9F%E5%99%A8%E4%BB%95%E6%A7%98/11_TLV_%E3%82%B9%E3%83%81%E3%83%BC%E3%83%A0%E3%83%88%E3%83%A9%E3%83%83%E3%83%97_J5X_%E8%A3%BD%E5%93%81%E4%BB%95%E6%A7%98%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="12_%E4%B8%AD%E5%9B%BD%E5%B7%A5%E6%A5%AD_%E3%83%90%E3%83%AB%E3%82%AF%E3%82%BF%E3%83%B3%E3%82%AF%E2%80%97RT-029-34500-2_%E4%BB%95%E6%A7%98%E6%9B%B8%E3%80%81%E5%BC%B7%E5%BA%A6%E8%A8%88%E7%AE%97%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name">12_中国工業_バルクタンク‗RT-029-34500-2_仕様書、強度計算書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('12_%E4%B8%AD%E5%9B%BD%E5%B7%A5%E6%A5%AD_%E3%83%90%E3%83%AB%E3%82%AF%E3%82%BF%E3%83%B3%E3%82%AF%E2%80%97RT-029-34500-2_%E4%BB%95%E6%A7%98%E6%9B%B8%E3%80%81%E5%BC%B7%E5%BA%A6%E8%A8%88%E7%AE%97%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/05_%E6%A9%9F%E5%99%A8%E4%BB%95%E6%A7%98/12_%E4%B8%AD%E5%9B%BD%E5%B7%A5%E6%A5%AD_%E3%83%90%E3%83%AB%E3%82%AF%E3%82%BF%E3%83%B3%E3%82%AF%E2%80%97RT-029-34500-2_%E4%BB%95%E6%A7%98%E6%9B%B8%E3%80%81%E5%BC%B7%E5%BA%A6%E8%A8%88%E7%AE%97%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="13_%E4%B8%89%E6%B5%A6%E5%B7%A5%E6%A5%AD__%E3%83%9C%E3%82%A4%E3%83%A9%E3%83%BCAI-500%2020S%E2%80%97%E5%BC%B7%E5%BA%A6%E8%A8%88%E7%AE%97%E6%9B%B8%E3%83%BB%E4%BC%9D%E7%86%B1%E9%9D%A2%E7%A9%8D%E8%A8%88%E7%AE%97%E6%9B%B8%E3%83%BB%E5%AE%89%E5%85%A8%E5%BC%81%E8%A8%88%E7%AE%97%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name">13_三浦工業__ボイラーAI-500 20S‗強度計算書・伝熱面積計算書・安全弁計算書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('13_%E4%B8%89%E6%B5%A6%E5%B7%A5%E6%A5%AD__%E3%83%9C%E3%82%A4%E3%83%A9%E3%83%BCAI-500%2020S%E2%80%97%E5%BC%B7%E5%BA%A6%E8%A8%88%E7%AE%97%E6%9B%B8%E3%83%BB%E4%BC%9D%E7%86%B1%E9%9D%A2%E7%A9%8D%E8%A8%88%E7%AE%97%E6%9B%B8%E3%83%BB%E5%AE%89%E5%85%A8%E5%BC%81%E8%A8%88%E7%AE%97%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/05_%E6%A9%9F%E5%99%A8%E4%BB%95%E6%A7%98/13_%E4%B8%89%E6%B5%A6%E5%B7%A5%E6%A5%AD__%E3%83%9C%E3%82%A4%E3%83%A9%E3%83%BCAI-500%2020S%E2%80%97%E5%BC%B7%E5%BA%A6%E8%A8%88%E7%AE%97%E6%9B%B8%E3%83%BB%E4%BC%9D%E7%86%B1%E9%9D%A2%E7%A9%8D%E8%A8%88%E7%AE%97%E6%9B%B8%E3%83%BB%E5%AE%89%E5%85%A8%E5%BC%81%E8%A8%88%E7%AE%97%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="14_%E4%B8%89%E6%B5%A6%E5%B7%A5%E6%A5%AD_%E9%AB%98%E5%9C%A7%E8%92%B8%E6%B0%97%E3%83%9C%E3%82%A4%E3%83%A9_%E4%BB%95%E6%A7%98%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name">14_三浦工業_高圧蒸気ボイラ_仕様書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('14_%E4%B8%89%E6%B5%A6%E5%B7%A5%E6%A5%AD_%E9%AB%98%E5%9C%A7%E8%92%B8%E6%B0%97%E3%83%9C%E3%82%A4%E3%83%A9_%E4%BB%95%E6%A7%98%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/05_%E6%A9%9F%E5%99%A8%E4%BB%95%E6%A7%98/14_%E4%B8%89%E6%B5%A6%E5%B7%A5%E6%A5%AD_%E9%AB%98%E5%9C%A7%E8%92%B8%E6%B0%97%E3%83%9C%E3%82%A4%E3%83%A9_%E4%BB%95%E6%A7%98%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="15_%E4%B8%89%E6%B5%A6%E5%B7%A5%E6%A5%AD_%E9%AB%98%E5%9C%A7%E8%92%B8%E6%B0%97%E3%83%9C%E3%82%A4%E3%83%A9%E8%A8%AD%E5%82%99_%E3%83%95%E3%83%AD%E3%83%BC%E3%82%B7%E3%83%BC%E3%83%88.pdf">
+            <div class="item-top">
+                <div class="item-name">15_三浦工業_高圧蒸気ボイラ設備_フローシート.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('15_%E4%B8%89%E6%B5%A6%E5%B7%A5%E6%A5%AD_%E9%AB%98%E5%9C%A7%E8%92%B8%E6%B0%97%E3%83%9C%E3%82%A4%E3%83%A9%E8%A8%AD%E5%82%99_%E3%83%95%E3%83%AD%E3%83%BC%E3%82%B7%E3%83%BC%E3%83%88.pdf')">★</button>
+                    <a href="./docs/05_%E6%A9%9F%E5%99%A8%E4%BB%95%E6%A7%98/15_%E4%B8%89%E6%B5%A6%E5%B7%A5%E6%A5%AD_%E9%AB%98%E5%9C%A7%E8%92%B8%E6%B0%97%E3%83%9C%E3%82%A4%E3%83%A9%E8%A8%AD%E5%82%99_%E3%83%95%E3%83%AD%E3%83%BC%E3%82%B7%E3%83%BC%E3%83%88.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="16_%E6%A9%9F%E5%99%A8%E4%BB%95%E6%A7%98%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name"><span class="badge-new">NEW</span>16_機器仕様書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('16_%E6%A9%9F%E5%99%A8%E4%BB%95%E6%A7%98%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/05_%E6%A9%9F%E5%99%A8%E4%BB%95%E6%A7%98/16_%E6%A9%9F%E5%99%A8%E4%BB%95%E6%A7%98%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+        <div class="item" data-id="17_%E3%81%9D%E3%81%AE%E4%BB%96%E6%A9%9F%E5%99%A8%E4%BB%95%E6%A7%98%E6%9B%B8.pdf">
+            <div class="item-top">
+                <div class="item-name"><span class="badge-new">NEW</span>17_その他機器仕様書.pdf</div>
+                <div class="btn-group">
+                    <button class="fav-btn" onclick="toggleFav('17_%E3%81%9D%E3%81%AE%E4%BB%96%E6%A9%9F%E5%99%A8%E4%BB%95%E6%A7%98%E6%9B%B8.pdf')">★</button>
+                    <a href="./docs/05_%E6%A9%9F%E5%99%A8%E4%BB%95%E6%A7%98/17_%E3%81%9D%E3%81%AE%E4%BB%96%E6%A9%9F%E5%99%A8%E4%BB%95%E6%A7%98%E6%9B%B8.pdf" class="btn" target="_blank">View</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="footer-name">株式会社サニックス資源開発グループ ひびき工場</div>
+    <a href="index.html" class="back-btn">← メインメニューに戻る</a>
+    <script>
+        function search() {
+            let q = document.getElementById('q').value.toLowerCase().split(/[ 　]+/);
+            let items = document.getElementsByClassName('item');
+            for (let i of items) {
+                let t = i.innerText.toLowerCase();
+                i.style.display = q.every(w => t.includes(w)) ? "" : "none";
+            }
+        }
+        function toggleFav(id) {
+            let favs = JSON.parse(localStorage.getItem('favs') || '[]');
+            if (favs.includes(id)) favs = favs.filter(f => f !== id);
+            else favs.push(id);
+            localStorage.setItem('favs', JSON.stringify(favs));
+            loadFavs();
+        }
+        function loadFavs() {
+            let favs = JSON.parse(localStorage.getItem('favs') || '[]');
+            document.querySelectorAll('.item').forEach(el => {
+                const btn = el.querySelector('.fav-btn');
+                if (favs.includes(el.dataset.id)) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+        }
+    </script>
+</body></html>

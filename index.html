@@ -12,6 +12,15 @@
         input { width: 100%; padding: 12px; margin: 20px 0; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 16px; box-sizing: border-box; }
         button { background: #22c55e; color: white; border: none; padding: 12px 30px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; }
         button:hover { background: #16a34a; }
+        .manual-wrapper { display: flex; max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+        .toc-sidebar { width: 280px; position: sticky; top: 20px; height: fit-content; border-right: 1px solid #eee; padding-right: 20px; }
+        .toc-sidebar ul { list-style: none; padding: 0; }
+        .toc-link { display: block; padding: 15px; color: #444; text-decoration: none; border-bottom: 1px solid #f9f9f9; cursor: pointer; }
+        .toc-link:hover { background: #f0f7ff; color: #007bff; }
+        .manual-content { flex: 1; padding-left: 40px; min-height: 1000px; }
+        .manual-section { margin-bottom: 80px; padding-top: 20px; border-top: 2px solid #333; }
+        .download-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px; margin-top: 10px; }
+        .btn { display: inline-block; padding: 10px 20px; background: #3b82f6; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -20,27 +29,39 @@
             <h3>認証</h3>
             <p>パスワードを入力してください</p>
             <input type="password" id="pass-input" placeholder="Password" autofocus>
-            <button onclick="checkPassword()">Login</button>
+            <button onclick="checkPassword()">ログイン</button>
             <p id="error-msg" style="color: #ef4444; display: none; margin-top: 15px;">パスワードが正しくありません</p>
         </div>
     </div>
+
     <div id="main-app" style="display: none;">
         <div class="manual-wrapper">
             <aside class="toc-sidebar">
                 <h3>目次</h3>
-                <ul id="toc-list">
-                    <li class="toc-item"><a href="#section1" class="toc-link">01. 設備図面(CAD)</a></li>
-                    <li class="toc-item"><a href="#section2" class="toc-link">02. 取扱説明書</a></li>
-                    <li class="toc-item"><a href="#section3" class="toc-link">03. 機器仕様</a></li>
+                <ul>
+                    <li><a onclick="scrollToSection('section1')" class="toc-link">01. 設備図面(CAD)</a></li>
+                    <li><a onclick="scrollToSection('section2')" class="toc-link">02. 取扱説明書</a></li>
+                    <li><a onclick="scrollToSection('section3')" class="toc-link">03. 機器仕様</a></li>
                 </ul>
             </aside>
             <main class="manual-content">
                 <section id="section1" class="manual-section">
                     <h2>01. 設備図面(CAD)</h2>
-                    <a href="07_CAD図面/01_設備図面_CAD/01_配置図/01_配置図.jww" download class="download-btn">01_配置図.jww を保存</a>
+                    <div class="download-box">
+                        <p>配置図のダウンロード：</p>
+                        <a href="ドキュメント/07_CAD図面/01_設備図面_CAD/01_配置図/01_配置図.jww" download class="btn">01_配置図.jww を保存</a>
+                    </div>
                 </section>
-                <section id="section2" class="manual-section"><h2>02. 取扱説明書</h2><div class="dummy-space"></div></section>
-                <section id="section3" class="manual-section"><h2>03. 機器仕様</h2><div class="dummy-space"></div></section>
+                <section id="section2" class="manual-section">
+                    <h2>02. 取扱説明書</h2>
+                    <p>準備中</p>
+                </section>
+                <section id="section3" class="manual-section">
+                    <h2>03. 機器仕様</h2>
+                    <div id="device-table-container">
+                        <p style="color: #666;">※ data.csvを読み込む準備ができています。</p>
+                    </div>
+                </section>
             </main>
         </div>
     </div>

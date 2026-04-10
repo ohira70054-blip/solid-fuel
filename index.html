@@ -4,15 +4,32 @@
     <meta charset="UTF-8">
     <meta name="google" content="notranslate">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>固体燃料プロジェクト 図書管理ベース</title>
+    <title>設備・機器取扱説明書</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; display: flex; justify-content: center; align-items: center; z-index: 3000; color: white; }
+        .login-box { background: #1e293b; padding: 40px; border-radius: 12px; text-align: center; width: 320px; }
+        input { width: 100%; padding: 12px; margin: 20px 0; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 16px; box-sizing: border-box; }
+        button { background: #22c55e; color: white; border: none; padding: 12px 30px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; }
+        
+        .manual-wrapper { display: flex; max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+        .toc-sidebar { width: 250px; position: sticky; top: 20px; height: fit-content; border-right: 1px solid #eee; padding-right: 20px; }
+        .toc-sidebar ul { list-style: none; padding: 0; }
+        .toc-link { display: block; padding: 12px; color: #444; text-decoration: none; border-bottom: 1px solid #f9f9f9; cursor: pointer; }
+        .toc-link:hover { background: #f0f7ff; color: #007bff; }
+        
+        .manual-content { flex: 1; padding-left: 40px; }
+        .manual-section { margin-bottom: 80px; padding-top: 20px; border-top: 2px solid #333; }
+        .download-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px; margin-top: 10px; }
+        .btn { display: inline-block; padding: 10px 20px; background: #3b82f6; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 5px; }
+    </style>
 </head>
-<body class="is-locked">
+<body>
     <div id="login-overlay">
         <div class="login-box">
             <h3>認証</h3>
             <p>パスワードを入力してください</p>
-            <input type="password" id="pass-field" placeholder="Password" autocomplete="new-password" autofocus>
+            <input type="password" id="pass-input" placeholder="Password" autofocus>
             <button onclick="checkPassword()">ログイン</button>
             <p id="error-msg" style="color: #ef4444; display: none; margin-top: 15px;">パスワードが正しくありません</p>
         </div>
@@ -33,87 +50,44 @@
                 </ul>
             </aside>
             <main class="manual-content">
-                
                 <section id="section1" class="manual-section">
                     <h2>01. 設備図面(CAD)</h2>
                     <div class="download-box">
-                        <h4 class="folder-title">■ 01_配置図</h4>
-                        <div class="btn-group">
-                            <a href="docs/07_CAD図面/01_設備図面_CAD/01_配置図/01_配置図.jww" download class="btn cad">01_配置図.jww</a>
-                            <a href="docs/07_CAD図面/01_設備図面_CAD/01_配置図/02_有機性脱水汚泥燃料施....jww" download class="btn cad">02_有機性脱水汚泥燃料施...</a>
-                            <a href="docs/07_CAD図面/01_設備図面_CAD/01_配置図/03_脱水機フロー.jww" download class="btn cad">03_脱水機フロー.jww</a>
-                        </div>
-                        <h4 class="folder-title" style="margin-top:20px;">■ 02_配管図</h4>
-                        <div class="btn-group">
-                            <a href="docs/07_CAD図面/01_設備図面_CAD/02_配管図/10_配管図_復水配管_PC.jww" download class="btn cad">10_配管図_復水配管_PC</a>
-                            <a href="docs/07_CAD図面/01_設備図面_CAD/02_配管図/11_配管図_スチームドレン....jww" download class="btn cad">11_配管図_スチームドレン</a>
-                            <a href="docs/07_CAD図面/01_設備図面_CAD/02_配管図/12_配管図_市水配管_PC.jww" download class="btn cad">12_配管図_市水配管_PC</a>
-                            <a href="docs/07_CAD図面/01_設備図面_CAD/02_配管図/13_配管図_ボイラースチー....jww" download class="btn cad">13_配管図_ボイラースチー</a>
-                            <a href="docs/07_CAD図面/01_設備図面_CAD/02_配管図/14_配管図_カチオン添加配....jww" download class="btn cad">14_配管図_カチオン添加配</a>
-                            <a href="docs/07_CAD図面/01_設備図面_CAD/02_配管図/15_配管図_集水桝移送配管....jww" download class="btn cad">15_配管図_集水桝移送配管</a>
-                            <a href="docs/07_CAD図面/01_設備図面_CAD/02_配管図/16_配管図_再生油添加配管....jww" download class="btn cad">16_配管図_再生油添加配管</a>
-                        </div>
+                        <p>■ 01_配置図</p>
+                        <a href="docs/07_CAD図面/01_設備図面_CAD/01_配置図/01_配置図.jww" download class="btn">01_配置図.jww を保存</a>
+                        <p style="margin-top:15px;">■ 02_配管図</p>
+                        <a href="docs/07_CAD図面/01_設備図面_CAD/02_配管図/10_配管図_復水配管_PC.jww" download class="btn">10_配管図_復水配管_PC.jww</a>
                     </div>
                 </section>
 
                 <section id="section2" class="manual-section">
                     <h2>02. 設備図面(PDF)</h2>
-                    <div class="download-box">
-                        <div class="btn-group">
-                            <a href="docs/01_設備図面_PDF/01_配置図.pdf" target="_blank" class="btn pdf">01_配置図.pdf</a>
-                            <a href="docs/01_設備図面_PDF/02_フロー図.pdf" target="_blank" class="btn pdf">02_フロー図.pdf</a>
-                            <a href="docs/01_設備図面_PDF/03_全体平面図.pdf" target="_blank" class="btn pdf">03_全体平面図.pdf</a>
-                        </div>
-                    </div>
+                    <p>準備中</p>
                 </section>
 
                 <section id="section3" class="manual-section">
                     <h2>03. 電気図面(PDF)</h2>
-                    <div class="download-box">
-                        <div class="btn-group">
-                            <a href="docs/02_電気図面_PDF/01_電気単線結線図.pdf" target="_blank" class="btn pdf">01_電気単線結線図.pdf</a>
-                            <a href="docs/02_電気図面_PDF/02_制御盤回路図.pdf" target="_blank" class="btn pdf">02_制御盤回路図.pdf</a>
-                        </div>
-                    </div>
+                    <p>準備中</p>
                 </section>
 
                 <section id="section4" class="manual-section">
                     <h2>04. 機器図面(PDF)</h2>
-                    <div class="download-box">
-                        <div class="btn-group">
-                            <a href="docs/04_機器図面_PDF/01_脱水機外形図.pdf" target="_blank" class="btn pdf">01_脱水機外形図.pdf</a>
-                            <a href="docs/04_機器図面_PDF/02_コンベア外形図.pdf" target="_blank" class="btn pdf">02_コンベア外形図.pdf</a>
-                        </div>
-                    </div>
+                    <p>準備中</p>
                 </section>
 
                 <section id="section5" class="manual-section">
                     <h2>05. 製作図面</h2>
-                    <div class="download-box">
-                        <div class="btn-group">
-                            <a href="docs/03_製作図面/01_架台製作図.pdf" target="_blank" class="btn pdf">01_架台製作図.pdf</a>
-                            <a href="docs/03_製作図面/02_配管詳細図.pdf" target="_blank" class="btn pdf">02_配管詳細図.pdf</a>
-                        </div>
-                    </div>
+                    <p>準備中</p>
                 </section>
 
                 <section id="section6" class="manual-section">
                     <h2>06. 機器仕様</h2>
-                    <div class="table-container">
-                        <div id="csv-table">
-                            <p class="status-msg">data.csvを読み込み中、またはファイル未設定です。</p>
-                        </div>
-                    </div>
+                    <p>準備中</p>
                 </section>
 
                 <section id="section7" class="manual-section">
                     <h2>07. 取扱説明書</h2>
-                    <div class="download-box">
-                        <div class="btn-group">
-                            <a href="docs/06_取扱説明書/01_全体操作マニュアル.pdf" target="_blank" class="btn pdf">01_全体操作マニュアル.pdf</a>
-                            <a href="docs/06_取扱説明書/02_保守点検要領書.pdf" target="_blank" class="btn pdf">02_保守点検要領書.pdf</a>
-                        </div>
-                    </div>
+                    <p>準備中</p>
                 </section>
             </main>
         </div>

@@ -6,22 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>設備・機器取扱説明書</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; display: flex; justify-content: center; align-items: center; z-index: 3000; color: white; }
-        .login-box { background: #1e293b; padding: 40px; border-radius: 12px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 320px; }
-        input { width: 100%; padding: 12px; margin: 20px 0; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 16px; box-sizing: border-box; }
-        button { background: #22c55e; color: white; border: none; padding: 12px 30px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; }
-        button:hover { background: #16a34a; }
-        .manual-wrapper { display: flex; max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
-        .toc-sidebar { width: 280px; position: sticky; top: 20px; height: fit-content; border-right: 1px solid #eee; padding-right: 20px; }
-        .toc-sidebar ul { list-style: none; padding: 0; }
-        .toc-link { display: block; padding: 15px; color: #444; text-decoration: none; border-bottom: 1px solid #f9f9f9; cursor: pointer; }
-        .toc-link:hover { background: #f0f7ff; color: #007bff; }
-        .manual-content { flex: 1; padding-left: 40px; min-height: 1000px; }
-        .manual-section { margin-bottom: 80px; padding-top: 20px; border-top: 2px solid #333; }
-        .download-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px; margin-top: 10px; }
-        .btn { display: inline-block; padding: 10px 20px; background: #3b82f6; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; }
-    </style>
 </head>
 <body>
     <div id="login-overlay">
@@ -40,8 +24,11 @@
                 <h3>目次</h3>
                 <ul>
                     <li><a onclick="scrollToSection('section1')" class="toc-link">01. 設備図面(CAD)</a></li>
-                    <li><a onclick="scrollToSection('section2')" class="toc-link">02. 取扱説明書</a></li>
-                    <li><a onclick="scrollToSection('section3')" class="toc-link">03. 機器仕様</a></li>
+                    <li><a onclick="scrollToSection('section2')" class="toc-link">02. 設備図面(PDF)</a></li>
+                    <li><a onclick="scrollToSection('section3')" class="toc-link">03. 電気図面(PDF)</a></li>
+                    <li><a onclick="scrollToSection('section4')" class="toc-link">04. 製作図面</a></li>
+                    <li><a onclick="scrollToSection('section5')" class="toc-link">05. 機器仕様</a></li>
+                    <li><a onclick="scrollToSection('section6')" class="toc-link">06. 取扱説明書</a></li>
                 </ul>
             </aside>
             <main class="manual-content">
@@ -49,18 +36,35 @@
                     <h2>01. 設備図面(CAD)</h2>
                     <div class="download-box">
                         <p>配置図のダウンロード：</p>
-                        <a href="ドキュメント/07_CAD図面/01_設備図面_CAD/01_配置図/01_配置図.jww" download class="btn">01_配置図.jww を保存</a>
+                        <a href="docs/07_CAD図面/01_設備図面_CAD/01_配置図/01_配置図.jww" download class="btn">01_配置図.jww を保存</a>
                     </div>
                 </section>
+
                 <section id="section2" class="manual-section">
-                    <h2>02. 取扱説明書</h2>
-                    <p>準備中</p>
+                    <h2>02. 設備図面(PDF)</h2>
+                    <a href="01_設備図面_PDF.html" class="btn">設備図面PDF一覧へ</a>
                 </section>
+
                 <section id="section3" class="manual-section">
-                    <h2>03. 機器仕様</h2>
+                    <h2>03. 電気図面(PDF)</h2>
+                    <a href="02_電気図面_PDF.html" class="btn">電気図面PDF一覧へ</a>
+                </section>
+
+                <section id="section4" class="manual-section">
+                    <h2>04. 製作図面</h2>
+                    <a href="03_製作図面.html" class="btn">製作図面一覧へ</a>
+                </section>
+
+                <section id="section5" class="manual-section">
+                    <h2>05. 機器仕様</h2>
                     <div id="device-table-container">
-                        <p style="color: #666;">※ data.csvを読み込む準備ができています。</p>
+                        <p>※ CSVデータを準備中です。</p>
                     </div>
+                </section>
+
+                <section id="section6" class="manual-section">
+                    <h2>06. 取扱説明書</h2>
+                    <a href="06_取扱説明書.html" class="btn">取扱説明書一覧へ</a>
                 </section>
             </main>
         </div>

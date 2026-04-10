@@ -1,1 +1,15 @@
-/* スタイルはHTML内に集約しました */
+
+body { margin: 0; font-family: sans-serif; background: #fff; }
+#login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; display: flex; justify-content: center; align-items: center; z-index: 3000; color: white; }
+.login-box { background: #1e293b; padding: 40px; border-radius: 12px; text-align: center; width: 320px; }
+input { width: 100%; padding: 12px; margin: 20px 0; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; }
+button { background: #22c55e; color: white; border: none; padding: 12px 30px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold; }
+.manual-wrapper { display: flex; max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+.toc-sidebar { width: 250px; position: sticky; top: 20px; height: fit-content; border-right: 1px solid #eee; }
+.toc-sidebar ul { list-style: none; padding: 0; }
+.toc-link { display: block; padding: 12px; color: #444; text-decoration: none; cursor: pointer; border-bottom: 1px solid #f9f9f9; }
+.toc-link:hover { background: #f0f7ff; color: #007bff; font-weight: bold; }
+.manual-content { flex: 1; padding-left: 40px; }
+.manual-section { margin-bottom: 60px; padding-top: 20px; border-top: 2px solid #333; }
+.download-box { background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; }
+.btn { display: inline-block; padding: 10px 20px; background: #3b82f6; color: white; text-decoration: none; border-radius: 5px; margin-top: 10px; font-weight: bold; }

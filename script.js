@@ -8,14 +8,8 @@ function checkPassword() {
         document.getElementById('error-msg').style.display = 'block';
     }
 }
-
 function scrollToSection(id) {
-    const element = document.getElementById(id);
-    if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-    }
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
 }
-
-document.getElementById('pass-input').addEventListener('keypress', (e) => { 
-    if (e.key === 'Enter') checkPassword(); 
-});
+document.getElementById('pass-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') checkPassword(); });

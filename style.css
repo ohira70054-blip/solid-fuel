@@ -1,17 +1,1 @@
-
-html { scroll-behavior: smooth; }
-body { margin: 0; font-family: sans-serif; background: #fff; }
-#progress-container { position: fixed; top: 0; width: 100%; height: 6px; background: #eee; z-index: 1000; }
-#progress-bar { height: 100%; background: #3498db; width: 0%; }
-.manual-wrapper { display: flex; max-width: 1100px; margin: 0 auto; padding: 60px 20px; }
-.toc-sidebar { width: 250px; position: sticky; top: 40px; height: fit-content; border-right: 2px solid #f0f0f0; padding-right: 20px; }
-.toc-sidebar ul { list-style: none; padding: 0; }
-.toc-item { position: relative; }
-.toc-link { display: block; padding: 12px; text-decoration: none; color: #555; border-radius: 6px; }
-.toc-link.active { background-color: #e3f2fd; color: #3498db; font-weight: bold; }
-.preview-popup { visibility: hidden; opacity: 0; position: absolute; left: 100%; top: 0; width: 200px; background: #333; color: #fff; padding: 10px; border-radius: 6px; font-size: 0.8rem; z-index: 100; transition: 0.3s; }
-.toc-item:hover .preview-popup { visibility: visible; opacity: 1; transform: translateX(10px); }
-.download-btn { display: inline-block; padding: 12px 24px; background-color: #2ecc71; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; }
-.manual-content { flex: 1; padding-left: 50px; }
-.manual-section { margin-bottom: 100px; }
-.dummy-space { height: 400px; background: #fafafa; border: 1px dashed #ddd; }
+/* スタイルはHTML内に集約しました */

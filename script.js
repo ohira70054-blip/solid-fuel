@@ -1,28 +1,20 @@
 
 function checkPassword() {
-    const input = document.getElementById('pass-input').value;
-    if (input === "sanixskg393290") {
+    const field = document.getElementById('pass-field');
+    if (field.value === "sanixskg393290") {
         document.getElementById('login-overlay').style.display = 'none';
         document.getElementById('main-app').style.display = 'block';
+        document.body.classList.remove('is-locked');
         window.scrollTo(0, 0);
     } else {
         document.getElementById('error-msg').style.display = 'block';
-        document.getElementById('pass-input').value = "";
+        field.value = "";
+        field.focus();
     }
 }
 function scrollToSection(id) {
     const el = document.getElementById(id);
-    if (el) {
-        const offset = 20;
-        const bodyRect = document.body.getBoundingClientRect().top;
-        const elementRect = el.getBoundingClientRect().top;
-        const elementPosition = elementRect - bodyRect;
-        const offsetPosition = elementPosition - offset;
-
-        window.scrollTo({
-            top: offsetPosition,
-            behavior: 'smooth'
-        });
-    }
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
 }
-document.getElementById('pass-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') checkPassword(); });
+document.getElementById('pass-field').addEventListener('keypress', (e) => { if (e.key === 'Enter') checkPassword(); });
+window.onload = () => { document.getElementById('pass-field').value = ""; };

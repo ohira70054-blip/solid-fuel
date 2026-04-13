@@ -135,7 +135,9 @@
     // ==========================================
     // 目次の構築
     // ==========================================
-    const myToc = TOC_DATA.filter(t => t.pdf === pdfPath || t.pdf === pdfName);
+    // pdfPathは../始まりなのでdocs/始まりのtoc登録パスと両方で照合する
+    const pdfPathNorm = pdfPath ? pdfPath.replace(/^\.\.\//, 'docs/') : '';
+    const myToc = TOC_DATA.filter(t => t.pdf === pdfPath || t.pdf === pdfPathNorm || t.pdf === pdfName);
     let pageCanvases = []; // canvas要素のリスト（インデックス＝ページ番号-1）
 
     function buildToc() {

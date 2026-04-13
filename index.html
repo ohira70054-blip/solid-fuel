@@ -192,7 +192,7 @@
             if (isP && isManualCat) {
                 // 取扱説明書：目次サイドバー付きビューアで開く
                 // viewer.htmlはdocs/内にあるため先頭のdocs/を../に変換して渡す
-                const pdfRelPath = f.path.replace(/^docs\//, '../');
+                const pdfRelPath = f.path.replace(/^docs\//, '');
                 const viewerUrl = `docs/viewer.html?pdf=${encodeURIComponent(pdfRelPath)}`;
                 fileLink = `<a href="${viewerUrl}" target="_blank">${f.name}</a>`;
             } else if (isP) {

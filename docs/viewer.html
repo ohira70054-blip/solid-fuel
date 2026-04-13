@@ -201,55 +201,124 @@
     }
 
     // ==========================================
-    // PDF読み込み・描画
+    // PDF読み込み・描画（遅延読み込み方式）
     // ==========================================
+    let pdfDoc = null;
+    const RENDER_AHEAD = 3;   // 表示中ページの前後何ページを先読みするか
+    const SCALE = 1.5;
+    const renderingPages = new Set(); // 描画中ページ番号を管理
+
     async function loadPDF(path) {
         try {
             const loadingTask = pdfjsLib.getDocument(path);
-            const pdf = await loadingTask.promise;
-            const totalPages = pdf.numPages;
+            pdfDoc = await loadingTask.promise;
+            const totalPages = pdfDoc.numPages;
 
             document.getElementById('page-info').textContent = `1 / ${totalPages} ページ`;
-            document.getElementById('loading-text').textContent = `ページを描画中... (0 / ${totalPages})`;
+            document.getElementById('loading-text').textContent = `読み込み中...`;
 
             buildToc();
 
             const pdfArea = document.getElementById('pdf-area');
             pageCanvases = new Array(totalPages).fill(null);
 
-            // 全ページ順番に描画
+            // 全ページ分のプレースホルダー（空のwrapper）を先に作成
+            // 高さを仮設定しておくことでスクロール位置が正しく計算できる
             for (let i = 1; i <= totalPages; i++) {
-                document.getElementById('loading-text').textContent = `ページを描画中... (${i} / ${totalPages})`;
-                const page = await pdf.getPage(i);
-                const viewport = page.getViewport({ scale: 1.5 });
-
                 const wrapper = document.createElement('div');
                 wrapper.className = 'page-wrapper';
+                wrapper.id = `page-wrapper-${i}`;
                 wrapper.style.position = 'relative';
                 wrapper.style.marginBottom = '4px';
+                wrapper.style.minHeight = '400px'; // 仮の高さ
 
                 const label = document.createElement('div');
                 label.className = 'page-label';
                 label.textContent = `${i} ページ`;
 
                 const canvas = document.createElement('canvas');
-                canvas.width = viewport.width;
-                canvas.height = viewport.height;
+                canvas.id = `page-canvas-${i}`;
                 pageCanvases[i - 1] = canvas;
 
                 wrapper.appendChild(label);
                 wrapper.appendChild(canvas);
                 pdfArea.appendChild(wrapper);
-
-                const ctx = canvas.getContext('2d');
-                await page.render({ canvasContext: ctx, viewport }).promise;
             }
 
+            // ローディング非表示・最初のページ周辺を描画開始
             document.getElementById('loading').style.display = 'none';
             document.getElementById('page-info').textContent = `1 / ${totalPages} ページ`;
 
+            await renderPageRange(1, Math.min(RENDER_AHEAD + 1, totalPages));
+
+            // IntersectionObserverで表示領域に入ったページを随時描画
+            setupLazyRender(totalPages);
+
         } catch (e) {
             showError(e.message || 'PDFの読み込みに失敗しました。');
+        }
+    }
+
+    // 指定範囲のページを並列描画
+    async function renderPageRange(from, to) {
+        const tasks = [];
+        for (let i = from; i <= to; i++) {
+            tasks.push(renderPage(i));
+        }
+        await Promise.all(tasks);
+    }
+
+    // 1ページ描画
+    async function renderPage(pageNum) {
+        if (!pdfDoc) return;
+        if (renderingPages.has(pageNum)) return;
+        const canvas = pageCanvases[pageNum - 1];
+        if (!canvas) return;
+        if (canvas.dataset.rendered === '1') return; // 描画済みはスキップ
+
+        renderingPages.add(pageNum);
+        try {
+            const page = await pdfDoc.getPage(pageNum);
+            const viewport = page.getViewport({ scale: SCALE });
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+
+            // wrapperの仮高さを実際のサイズに更新
+            const wrapper = document.getElementById(`page-wrapper-${pageNum}`);
+            if (wrapper) wrapper.style.minHeight = '';
+
+            const ctx = canvas.getContext('2d');
+            await page.render({ canvasContext: ctx, viewport }).promise;
+            canvas.dataset.rendered = '1';
+        } finally {
+            renderingPages.delete(pageNum);
+        }
+    }
+
+    // IntersectionObserverでビューポートに入ったページを描画
+    function setupLazyRender(totalPages) {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) return;
+                const pageNum = parseInt(entry.target.dataset.page);
+                if (!pageNum) return;
+                // 前後RENDER_AHEADページも先読み
+                const from = Math.max(1, pageNum - 1);
+                const to = Math.min(totalPages, pageNum + RENDER_AHEAD);
+                renderPageRange(from, to);
+            });
+        }, {
+            root: document.getElementById('pdf-area'),
+            rootMargin: '200px 0px',
+            threshold: 0
+        });
+
+        for (let i = 1; i <= totalPages; i++) {
+            const wrapper = document.getElementById(`page-wrapper-${i}`);
+            if (wrapper) {
+                wrapper.dataset.page = i;
+                observer.observe(wrapper);
+            }
         }
     }
 

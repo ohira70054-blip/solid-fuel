@@ -154,37 +154,47 @@
             Object.keys(grp).sort().forEach((cat, i) => {
                 const id = 'sec-'+i;
                 let statusHtml = '';
-                if(cat.includes("07_CAD図面")) statusHtml = '<span class="nav-status">工事中</span>';
                 if(cat.includes("08_作業要領書")) statusHtml = '<span class="nav-status">準備中</span>';
+                const isCADCat = cat.includes("07_CAD図面");
                 const n = document.createElement('div'); n.className = 'nav-item'; n.innerHTML = `<span>${cat}</span>${statusHtml}`;
                 n.onclick = () => { window.scrollTo({top: document.getElementById(id).offsetTop - 70, behavior:'smooth'}); if(window.innerWidth <= 768) toggleSidebar(); };
                 nav.appendChild(n);
                 const s = document.createElement('div'); s.id = id; s.className = 'section-card';
                 s.innerHTML = `<h2 style="font-size:1.1rem; border-bottom:2px solid var(--primary); padding-bottom:5px; margin-top:0;">${cat} ${statusHtml}</h2><div class="file-list"></div>`;
                 const listDiv = s.querySelector('.file-list');
-                grp[cat].forEach(f => { if(f.name) listDiv.appendChild(item(f)); });
+                grp[cat].forEach(f => { if(f.name) listDiv.appendChild(item(f, isCADCat)); });
                 area.appendChild(s);
             });
         }
 
-        function item(f) {
-            const isP = f.name.toLowerCase().endsWith('.pdf');
+        function item(f, showExt) {
+            const nameLower = f.name.toLowerCase();
+            const isP = nameLower.endsWith('.pdf');
             const isF = favorites.includes(f.path);
             const d = document.createElement('div');
             d.className = 'file-item';
 
+            // 拡張子バッジ：07_CAD図面カテゴリのみ実際の拡張子を表示、それ以外は PDF/CAD
+            let extLabel, extColor;
+            if (showExt && !isP) {
+                const m = f.name.match(/\.([^.]+)$/);
+                extLabel = m ? m[1].toUpperCase() : 'CAD';
+                extColor = extLabel === 'JWW' ? '#0ea5e9' : extLabel === 'DWG' ? '#f97316' : extLabel === 'DXF' ? '#8b5cf6' : '#64748b';
+            } else {
+                extLabel = isP ? 'PDF' : 'CAD';
+                extColor = '#64748b';
+            }
+
             let fileLink;
             if (isP) {
-                // PDF：従来通り別タブで開く
                 fileLink = `<a href="${f.path}" target="_blank">${f.name}</a>`;
             } else {
-                // CAD：Fetch API でダウンロード（クロスオリジン対策）
                 fileLink = `<a href="#" onclick="downloadFile('${f.path}', '${f.name}'); return false;">${f.name}</a>`;
             }
 
             d.innerHTML = `
                 <span onclick="toggleFav(event, '${f.path}')" style="cursor:pointer; color:${isF?'#f59e0b':'#ccc'}; font-size:1.2rem;">★</span>
-                <span style="font-size:9px; background:#64748b; color:white; padding:2px 5px; border-radius:4px; flex-shrink:0;">${isP?'PDF':'CAD'}</span>
+                <span style="font-size:9px; background:${extColor}; color:white; padding:2px 5px; border-radius:4px; flex-shrink:0;">${extLabel}</span>
                 ${fileLink}
             `;
             return d;

@@ -5,132 +5,175 @@
     <title>solid-fuel_docs</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        :root { --primary: #22c55e; --bg: #f1f5f9; --header-bg: rgba(255,255,255,0.95); --text: #1e293b; --card-bg: #ffffff; --border: #e2e8f0; --sidebar-hover: #ffffff; --input-bg: #ffffff; --input-text: #1e293b; }
+        :root { --primary: #22c55e; --bg: #f1f5f9; --header-bg: #ffffff; --text: #1e293b; --border: #cbd5e1; --btn-bg: #e2e8f0; }
+        [data-theme="dark"] { --bg: #0f172a; --header-bg: #1e293b; --text: #f1f5f9; --border: #475569; --btn-bg: #334155; }
+        body { margin: 0; font-family: sans-serif; background: var(--bg); color: var(--text); transition: 0.3s; }
         
-        body { margin: 0; font-family: sans-serif; background: var(--bg); color: var(--text); transition: background 0.3s, color 0.3s; }
+        #login-screen { position: fixed; inset: 0; background: #0f172a; display: flex; align-items: center; justify-content: center; z-index: 10000; }
+        .login-card { background: #1e293b; padding: 30px; border-radius: 12px; text-align: center; color: white; width: 280px; }
         
-        #login-screen { position: fixed; inset: 0; background: #0f172a; display: flex; align-items: center; justify-content: center; z-index: 10000; flex-direction: column; }
-        .login-card { background: #1e293b; padding: 40px; border-radius: 12px; text-align: center; color: white; width: 90%; max-width: 350px; }
-        input[type="password"] { width: 100%; padding: 12px; margin: 20px 0; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: white; text-align: center; font-size: 18px; outline: none; }
-        
-        #main-app { display: none; min-height: 100vh; flex-direction: column; }
-        
-        header { position: sticky; top: 0; background: var(--header-bg); border-bottom: 1px solid var(--border); padding: 10px 20px; z-index: 1000; display: flex; align-items: center; gap: 10px; backdrop-filter: blur(8px); }
-        #search-input { flex: 1; padding: 10px 15px; border: 2px solid var(--primary); border-radius: 30px; outline: none; background: var(--input-bg); color: var(--input-text); }
-        
-        /* スマホ用メニューボタン */
-        .menu-toggle { display: none; background: var(--primary); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 1.1rem; }
-        
-        .container { display: flex; max-width: 1600px; margin: 0 auto; padding: 15px; gap: 15px; }
-        
-        /* サイドバー設定 */
-        .sidebar { width: 240px; position: sticky; top: 70px; height: calc(100vh - 100px); overflow-y: auto; transition: 0.3s; }
-        .nav-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; color: #64748b; text-decoration: none; cursor: pointer; border-radius: 8px; font-size: 0.85rem; transition: 0.2s; }
-        .nav-item:hover, .nav-item.active { background: var(--sidebar-hover); color: var(--primary); font-weight: bold; }
-        .nav-fav { color: #f59e0b !important; font-weight: bold; border-left: 3px solid #f59e0b; margin-bottom: 10px; }
-        .nav-status { font-size: 0.65rem; padding: 2px 5px; background: #e2e8f0; border-radius: 4px; color: #64748b; }
-        .help-btn { margin-top: 30px; padding: 12px; background: #334155; color: white; border-radius: 8px; cursor: pointer; text-align: center; font-size: 0.85rem; font-weight: bold; border: none; width: 100%; }
+        /* 入力欄：自動補完の色（黄色）を消す設定も追加 */
+        input#pass { 
+            width: 100%; padding: 12px; margin: 15px 0; border-radius: 6px; border: none; 
+            text-align: center; font-size: 1.2rem; box-sizing: border-box; outline: none; 
+            background: #ffffff !important; color: #000 !important;
+            -webkit-text-security: disc; /* 入力文字を黒丸にする（一部ブラウザ用） */
+        }
+
+        header { position: sticky; top: 0; background: var(--header-bg); border-bottom: 2px solid var(--primary); padding: 8px 12px; z-index: 1000; display: flex; align-items: center; gap: 10px; box-sizing: border-box; }
+        .menu-toggle { background: var(--primary); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 1rem; flex-shrink: 0; }
+        #search-input { flex: 1; min-width: 50px; padding: 8px 15px; border: 1px solid var(--border); border-radius: 20px; background: var(--bg); color: var(--text); outline: none; }
+        .theme-toggle-btn { background: #f59e0b; color: white; border: none; width: 42px; height: 42px; border-radius: 50%; cursor: pointer; font-size: 1.4rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+
+        .container { display: flex; max-width: 1400px; margin: 0 auto; padding: 10px; gap: 10px; }
+        .sidebar { width: 220px; position: sticky; top: 70px; height: calc(100vh - 80px); overflow-y: auto; flex-shrink: 0; }
+        .nav-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; color: #64748b; cursor: pointer; border-radius: 6px; font-size: 0.85rem; margin-bottom: 2px; }
+        .nav-item:hover { background: var(--btn-bg); color: var(--primary); }
+        .nav-status { font-size: 0.65rem; padding: 2px 6px; background: #e2e8f0; border-radius: 4px; color: #64748b; font-weight: bold; }
+        .side-fav-item { color: #f59e0b !important; font-weight: bold; border-left: 3px solid #f59e0b; border-radius: 0 6px 6px 0 !important; margin-bottom: 5px; }
+
+        .help-section { margin-top: 25px; padding-top: 15px; border-top: 1px solid var(--border); }
+        .help-title { font-weight: bold; color: var(--primary); font-size: 0.9rem; margin-bottom: 8px; }
+        .help-text { font-size: 0.75rem; color: #64748b; line-height: 1.6; }
 
         .main-content { flex: 1; min-width: 0; }
-        .section-card { background: var(--card-bg); border-radius: 10px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .section-header { display: flex; align-items: center; gap: 10px; border-bottom: 2px solid var(--primary); margin-bottom: 15px; padding-bottom: 5px; }
-        .status-badge { font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; background: var(--border); color: #64748b; }
-
-        .file-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
-        .file-item { background: var(--bg); padding: 10px; border-radius: 8px; display: flex; align-items: center; gap: 8px; border: 1px solid var(--border); }
+        .section-card { background: var(--header-bg); border-radius: 8px; padding: 15px; margin-bottom: 15px; border: 1px solid var(--border); }
+        .file-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 8px; }
+        .file-item { background: var(--bg); padding: 8px; border-radius: 6px; display: flex; align-items: center; gap: 8px; border: 1px solid var(--border); }
         .file-item a { text-decoration: none; color: var(--text); font-size: 0.8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
-        .badge { padding: 2px 5px; border-radius: 4px; font-size: 9px; color: white; font-weight: bold; }
-        .bg-pdf { background: #ef4444; } .bg-cad { background: #3b82f6; }
-        .fav-btn { cursor: pointer; color: #ccc; font-size: 1.2rem; } .fav-btn.active { color: #f59e0b; }
-        #fav-section { display: none; background: rgba(245, 158, 11, 0.1); border: 2px dashed #f59e0b; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
 
-        /* スマホ対応用レスポンシブ */
         @media (max-width: 768px) {
-            .menu-toggle { display: block; }
-            .sidebar {
-                position: fixed; left: -260px; top: 0; bottom: 0; width: 240px; 
-                background: var(--card-bg); z-index: 2000; padding: 20px;
-                box-shadow: 2px 0 10px rgba(0,0,0,0.2); height: 100vh;
-            }
+            .sidebar { position: fixed; left: -260px; top: 0; bottom: 0; background: var(--header-bg); z-index: 2000; padding: 20px; transition: 0.3s; width: 240px; box-shadow: 5px 0 15px rgba(0,0,0,0.1); }
             .sidebar.open { left: 0; }
             #sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1500; }
             #sidebar-overlay.open { display: block; }
         }
-
-        #modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 3000; align-items: center; justify-content: center; padding: 20px; }
-        .modal-content { background: var(--card-bg); color: var(--text); padding: 30px; border-radius: 15px; max-width: 500px; width: 100%; }
     </style>
 </head>
 <body>
-    <div id="login-screen"><div class="login-card"><h2>完成図書データベース</h2><input type="password" id="pass" placeholder="Password" autofocus><button onclick="login()" style="width:100%; padding:12px; background:var(--primary); color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">ログイン</button></div></div>
-    
+    <div id="login-screen">
+        <div class="login-card">
+            <h3>完成図書DB</h3>
+            <input type="text" id="pass" placeholder="Password" autocomplete="new-password" style="-webkit-text-security: disc;">
+            <button onclick="login()" style="width:100%;padding:12px;background:var(--primary);color:white;border:none;border-radius:6px;cursor:pointer;font-weight:bold;">ログイン</button>
+        </div>
+    </div>
+
     <div id="sidebar-overlay" onclick="toggleSidebar()"></div>
 
-    <div id="main-app">
+    <div id="main-app" style="display:none;">
         <header>
-            <button class="menu-toggle" onclick="toggleSidebar()">☰ 目次</button>
-            <div style="font-weight:bold; color:var(--primary); font-size:1.1rem; flex-shrink:0;">solid-fuel</div>
-            <input type="text" id="search-input" placeholder="検索..." oninput="handleSearch()" autocomplete="off">
+            <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+            <input type="text" id="search-input" placeholder="検索..." oninput="handleSearch()">
+            <button class="theme-toggle-btn" onclick="toggleTheme()" id="t-btn">🌙</button>
         </header>
         <div class="container">
             <aside class="sidebar" id="sidebar">
-                <div style="font-weight:bold; margin-bottom:20px; color:var(--primary); display:flex; justify-content:space-between; align-items:center;">
-                    メニュー <span onclick="toggleSidebar()" style="cursor:pointer; color:#64748b; font-size:1.2rem;">✕</span>
+                <div id="side-fav-container" style="display:none; margin-bottom:20px;">
+                    <div style="font-weight:bold; color:#f59e0b; margin-bottom:10px; font-size:0.9rem;">★ お気に入り</div>
+                    <div id="side-fav-nav"></div>
                 </div>
+                <div style="font-weight:bold; color:var(--primary); margin-bottom:15px; font-size:0.9rem;">カテゴリー</div>
                 <div id="side-nav"></div>
-                <button class="help-btn" onclick="toggleModal(true)">📖 使い方</button>
+                <div class="help-section">
+                    <div class="help-title">📖 使い方</div>
+                    <div class="help-text">
+                        <b>・絞り込み：</b>検索窓に文字入力<br>
+                        <b>・お気に入り：</b>★をタップして固定<br>
+                        <b>・閲覧：</b>PDFは別タブ、CADは保存<br>
+                        <b>・モード切替：</b>右上の ☀️/🌙 ボタン
+                    </div>
+                </div>
             </aside>
             <main class="main-content">
-                <div id="fav-section">
-                    <div style="font-weight:bold; color:#f59e0b; margin-bottom:10px;">★ お気に入り</div>
+                <div id="fav-section" style="display:none; margin-bottom:20px; padding:15px; border:2px dashed #f59e0b; border-radius:10px; background:rgba(245,158,11,0.05);">
+                    <div style="font-weight:bold; color:#f59e0b; margin-bottom:8px;">★ お気に入り（クイックアクセス）</div>
                     <div id="fav-list" class="file-list"></div>
                 </div>
                 <div id="data-area"></div>
             </main>
         </div>
-        <footer style="text-align:center; padding:20px; color:#94a3b8; font-size:0.8rem;">株式会社サニックス資源開発開発グループ ひびき工場</footer>
     </div>
-
-    <div id="modal-overlay" onclick="toggleModal(false)"><div class="modal-content" onclick="event.stopPropagation()"><h3>使い方</h3><div style="font-size: 0.9rem; line-height: 1.8;"><b>・複数検索:</b> スペースで絞り込み<br><b>・お気に入り:</b> 星ボタンで固定<br><b>・閲覧:</b> PDFは別タブ、CADは保存</div><button onclick="toggleModal(false)" style="margin-top:20px; width:100%; padding:10px; background:var(--primary); color:white; border:none; border-radius:8px; cursor:pointer;">閉じる</button></div></div>
 
     <script>
         const allFiles = {{JSON_DATA}};
         let favorites = JSON.parse(localStorage.getItem('sanix_favs') || '[]');
 
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('open');
-            document.getElementById('sidebar-overlay').classList.toggle('open');
+        function login() {
+            const p = document.getElementById('pass').value;
+            if(p === "{{PASSWORD}}") {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-app').style.display = 'block';
+                render(allFiles);
+            } else {
+                alert("パスワードが違います");
+                document.getElementById('pass').value = "";
+            }
         }
 
-        function login() { if(document.getElementById('pass').value === "{{PASSWORD}}") { document.getElementById('login-screen').style.display = 'none'; document.getElementById('main-app').style.display = 'flex'; render(allFiles); } else { alert("パスワードが違います"); } }
-        
+        // Enterキー
+        document.getElementById('pass').addEventListener('keypress', (e) => { if(e.key === 'Enter') login(); });
+
+        // 入力時に動的にタイプを変更する（さらなる保険）
+        const passInput = document.getElementById('pass');
+        passInput.addEventListener('input', function() {
+            this.style.webkitTextSecurity = 'disc';
+        });
+
         function render(data) {
-            const area = document.getElementById('data-area'), nav = document.getElementById('side-nav'), fList = document.getElementById('fav-list'), fSec = document.getElementById('fav-section');
-            area.innerHTML = ''; nav.innerHTML = ''; fList.innerHTML = '';
+            const area = document.getElementById('data-area'), nav = document.getElementById('side-nav'), fList = document.getElementById('fav-list'), fSec = document.getElementById('fav-section'), sFavNav = document.getElementById('side-fav-nav'), sFavCont = document.getElementById('side-fav-container');
+            area.innerHTML = ''; nav.innerHTML = ''; fList.innerHTML = ''; sFavNav.innerHTML = '';
             const fvs = allFiles.filter(f => favorites.includes(f.path));
-            if(fvs.length > 0) { fSec.style.display = 'block'; fvs.forEach(f => fList.appendChild(item(f))); } else { fSec.style.display = 'none'; }
-            
+            if(fvs.length > 0) {
+                fSec.style.display = 'block'; sFavCont.style.display = 'block';
+                fvs.forEach(f => {
+                    fList.appendChild(item(f));
+                    const sn = document.createElement('div'); sn.className = 'nav-item side-fav-item'; sn.innerText = f.name;
+                    sn.onclick = () => { window.open(f.path, '_blank'); };
+                    sFavNav.appendChild(sn);
+                });
+            } else { fSec.style.display = 'none'; sFavCont.style.display = 'none'; }
             const grp = data.reduce((acc, f) => { if(!acc[f.cat1]) acc[f.cat1] = []; acc[f.cat1].push(f); return acc; }, {});
             Object.keys(grp).sort().forEach((cat, i) => {
-                const id = 'sec-'+i, n = document.createElement('div'); n.className = 'nav-item';
-                let st = cat.includes("07_CAD") ? "工事中" : cat.includes("08_作業") ? "準備中" : "";
-                n.innerHTML = `<span>${cat}</span>${st?'<span class="nav-status">'+st+'</span>':''}`;
-                n.onclick = () => { 
-                    window.scrollTo({top: document.getElementById(id).offsetTop - 70, behavior:'smooth'});
-                    if(window.innerWidth <= 768) toggleSidebar(); 
-                };
+                const id = 'sec-'+i;
+                let statusHtml = '';
+                if(cat.includes("07_CAD図面")) statusHtml = '<span class="nav-status">工事中</span>';
+                if(cat.includes("08_作業要領書")) statusHtml = '<span class="nav-status">準備中</span>';
+                const n = document.createElement('div'); n.className = 'nav-item'; n.innerHTML = `<span>${cat}</span>${statusHtml}`;
+                n.onclick = () => { window.scrollTo({top: document.getElementById(id).offsetTop - 70, behavior:'smooth'}); if(window.innerWidth <= 768) toggleSidebar(); };
                 nav.appendChild(n);
                 const s = document.createElement('div'); s.id = id; s.className = 'section-card';
-                s.innerHTML = `<div class="section-header"><h2 style="font-size:1.1rem;margin:0;">${cat}</h2>${st?'<span class="status-badge">'+st+'</span>':''}</div>`;
-                const l = document.createElement('div'); l.className = 'file-list'; grp[cat].forEach(f => { if(f.name) l.appendChild(item(f)); }); s.appendChild(l); area.appendChild(s);
+                s.innerHTML = `<h2 style="font-size:1.1rem; border-bottom:2px solid var(--primary); padding-bottom:5px; margin-top:0;">${cat} ${statusHtml}</h2><div class="file-list"></div>`;
+                const listDiv = s.querySelector('.file-list');
+                grp[cat].forEach(f => { if(f.name) listDiv.appendChild(item(f)); });
+                area.appendChild(s);
             });
         }
-        function item(f) { const isP = f.name.toLowerCase().endsWith('.pdf'), isF = favorites.includes(f.path), d = document.createElement('div'); d.className = 'file-item'; d.innerHTML = `<span class="fav-btn ${isF?'active':''}" onclick="toggleFav('${f.path}')">★</span><span class="badge ${isP?'bg-pdf':'bg-cad'}">${isP?'PDF':'CAD'}</span><a href="${f.path}" ${isP?'target="_blank"':'download'}>${f.name}</a>`; return d; }
-        function toggleFav(p) { const i = favorites.indexOf(p); if(i > -1) favorites.splice(i, 1); else favorites.push(p); localStorage.setItem('sanix_favs', JSON.stringify(favorites)); render(currentData || allFiles); }
+
+        function item(f) {
+            const isP = f.name.toLowerCase().endsWith('.pdf'), isF = favorites.includes(f.path), d = document.createElement('div');
+            d.className = 'file-item';
+            d.innerHTML = `<span onclick="toggleFav(event, '${f.path}')" style="cursor:pointer; color:${isF?'#f59e0b':'#ccc'}; font-size:1.2rem;">★</span><span style="font-size:9px; background:#64748b; color:white; padding:2px 5px; border-radius:4px; flex-shrink:0;">${isP?'PDF':'CAD'}</span><a href="${f.path}" ${isP?'target="_blank"':'download'}>${f.name}</a>`;
+            return d;
+        }
+
+        function toggleFav(e, p) { e.stopPropagation(); const i = favorites.indexOf(p); if(i > -1) favorites.splice(i, 1); else favorites.push(p); localStorage.setItem('sanix_favs', JSON.stringify(favorites)); render(currentData || allFiles); }
         let currentData = null;
-        function handleSearch() { const qs = document.getElementById('search-input').value.toLowerCase().split(/\s+/).filter(q => q); currentData = allFiles.filter(f => { const txt = (f.name + f.cat1 + f.cat2).toLowerCase(); return qs.every(q => txt.includes(q)); }); render(currentData); }
-        function toggleModal(s) { document.getElementById('modal-overlay').style.display = s ? 'flex' : 'none'; }
-        document.getElementById('pass').addEventListener('keypress', (e) => { if(e.key==='Enter') login(); });
+        function handleSearch() {
+            const qs = document.getElementById('search-input').value.toLowerCase().split(/\s+/).filter(q => q);
+            currentData = allFiles.filter(f => { const txt = (f.name + f.cat1).toLowerCase(); return qs.every(q => txt.includes(q)); });
+            render(currentData);
+        }
+
+        const savedTheme = localStorage.getItem('theme');
+        if(savedTheme === 'dark') { document.body.setAttribute('data-theme', 'dark'); document.getElementById('t-btn').innerText = '☀️'; }
+        function toggleTheme() {
+            const isDark = document.body.getAttribute('data-theme') === 'dark';
+            const btn = document.getElementById('t-btn');
+            if(isDark) { document.body.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); btn.innerText = '🌙'; }
+            else { document.body.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); btn.innerText = '☀️'; }
+        }
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidebar-overlay').classList.toggle('open'); }
     </script>
 </body>
 </html>

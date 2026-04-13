@@ -135,9 +135,10 @@
     // ==========================================
     // 目次の構築
     // ==========================================
-    // pdfPathは../始まりなのでdocs/始まりのtoc登録パスと両方で照合する
+    // pdfPathはdocs/なし・docs/あり・../始まりの3パターンを照合する
+    const pdfPathWithDocs = pdfPath ? 'docs/' + pdfPath : '';
     const pdfPathNorm = pdfPath ? pdfPath.replace(/^\.\.\//, 'docs/') : '';
-    const myToc = TOC_DATA.filter(t => t.pdf === pdfPath || t.pdf === pdfPathNorm || t.pdf === pdfName);
+    const myToc = TOC_DATA.filter(t => t.pdf === pdfPath || t.pdf === pdfPathNorm || t.pdf === pdfPathWithDocs || t.pdf === pdfName);
     let pageCanvases = []; // canvas要素のリスト（インデックス＝ページ番号-1）
 
     function buildToc() {

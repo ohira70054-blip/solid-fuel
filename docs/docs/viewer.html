@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>取扱説明書ビューア</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: sans-serif; background: #0f172a; color: #f1f5f9; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+        /* ヘッダー */
+        #header { background: #1e293b; border-bottom: 2px solid #22c55e; padding: 8px 15px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+        #back-btn { background: #22c55e; color: white; border: none; padding: 7px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; white-space: nowrap; }
+        #doc-title { font-size: 0.95rem; font-weight: bold; color: #f1f5f9; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+        #page-info { font-size: 0.8rem; color: #94a3b8; white-space: nowrap; flex-shrink: 0; }
+
+        /* メインレイアウト */
+        #body { display: flex; flex: 1; overflow: hidden; }
+
+        /* 目次サイドバー */
+        #toc-sidebar { width: 260px; background: #1e293b; border-right: 1px solid #334155; display: flex; flex-direction: column; flex-shrink: 0; transition: 0.3s; }
+        #toc-header { padding: 12px 15px; border-bottom: 1px solid #334155; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+        #toc-title { font-weight: bold; color: #22c55e; font-size: 0.9rem; }
+        #toc-toggle { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 1.1rem; padding: 2px 6px; }
+        #toc-list { flex: 1; overflow-y: auto; padding: 8px 0; }
+        #toc-sidebar.collapsed { width: 42px; }
+        #toc-sidebar.collapsed #toc-title,
+        #toc-sidebar.collapsed #toc-list { display: none; }
+
+        /* 目次アイテム */
+        .toc-item { padding: 7px 15px; cursor: pointer; font-size: 0.82rem; color: #94a3b8; border-left: 3px solid transparent; line-height: 1.4; transition: 0.15s; display: flex; align-items: baseline; gap: 6px; }
+        .toc-item:hover { background: #334155; color: #f1f5f9; }
+        .toc-item.active { background: rgba(34,197,94,0.15); color: #22c55e; border-left-color: #22c55e; font-weight: bold; }
+        .toc-item[data-level="0"] { font-weight: bold; color: #f1f5f9; font-size: 0.88rem; }
+        .toc-item[data-level="1"] { padding-left: 15px; }
+        .toc-item[data-level="2"] { padding-left: 28px; font-size: 0.78rem; }
+        .toc-item[data-level="3"] { padding-left: 40px; font-size: 0.75rem; }
+        .toc-page { font-size: 0.7rem; color: #475569; white-space: nowrap; margin-left: auto; }
+        .toc-item.active .toc-page { color: #86efac; }
+
+        /* no-toc メッセージ */
+        #no-toc { padding: 20px 15px; color: #475569; font-size: 0.8rem; line-height: 1.6; }
+
+        /* PDFエリア */
+        #pdf-area { flex: 1; overflow: auto; background: #334155; display: flex; flex-direction: column; align-items: center; padding: 15px; gap: 10px; }
+
+        /* ページラベル */
+        .page-wrapper { position: relative; }
+        .page-label { position: absolute; top: -20px; left: 0; font-size: 0.7rem; color: #94a3b8; }
+        canvas { display: block; box-shadow: 0 4px 20px rgba(0,0,0,0.5); background: white; }
+
+        /* ローディング */
+        #loading { position: fixed; inset: 0; background: #0f172a; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; z-index: 9999; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #334155; border-top-color: #22c55e; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        #loading-text { color: #94a3b8; font-size: 0.9rem; }
+
+        /* エラー */
+        #error-msg { display: none; position: fixed; inset: 0; background: #0f172a; align-items: center; justify-content: center; flex-direction: column; gap: 15px; }
+        #error-msg.show { display: flex; }
+
+        /* スクロールバー */
+        #toc-list::-webkit-scrollbar, #pdf-area::-webkit-scrollbar { width: 6px; }
+        #toc-list::-webkit-scrollbar-track, #pdf-area::-webkit-scrollbar-track { background: transparent; }
+        #toc-list::-webkit-scrollbar-thumb, #pdf-area::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+
+        @media (max-width: 768px) {
+            #toc-sidebar { position: fixed; left: -270px; top: 0; bottom: 0; z-index: 1000; width: 260px !important; }
+            #toc-sidebar.mobile-open { left: 0; }
+            #mobile-toc-btn { display: flex !important; }
+        }
+        #mobile-toc-btn { display: none; background: #334155; color: white; border: none; padding: 7px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; align-items: center; gap: 5px; }
+    </style>
+</head>
+<body>
+
+<div id="loading">
+    <div class="spinner"></div>
+    <div id="loading-text">PDFを読み込み中...</div>
+</div>
+
+<div id="error-msg">
+    <div style="font-size:2rem;">⚠️</div>
+    <div style="color:#f87171; font-weight:bold;">PDFを読み込めませんでした</div>
+    <div id="error-detail" style="color:#94a3b8; font-size:0.85rem;"></div>
+    <button onclick="history.back()" style="margin-top:10px; background:#22c55e; color:white; border:none; padding:10px 20px; border-radius:6px; cursor:pointer;">← 戻る</button>
+</div>
+
+<div id="header">
+    <button id="back-btn" onclick="history.back()">← 戻る</button>
+    <button id="mobile-toc-btn" onclick="toggleMobileToc()">📋 目次</button>
+    <div id="doc-title">読み込み中...</div>
+    <div id="page-info"></div>
+</div>
+
+<div id="body">
+    <div id="toc-sidebar">
+        <div id="toc-header">
+            <span id="toc-title">📋 目次</span>
+            <button id="toc-toggle" onclick="toggleToc()" title="目次を折りたたむ">◀</button>
+        </div>
+        <div id="toc-list">
+            <div id="no-toc">この文書の目次データはまだ登録されていません。<br><br>toc.csv に追加することで目次が表示されます。</div>
+        </div>
+    </div>
+
+    <div id="pdf-area" onscroll="onPdfScroll()"></div>
+</div>
+
+<!-- PDF.js CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+    // ==========================================
+    // 設定
+    // ==========================================
+    const TOC_DATA = [{"pdf": "docs/06_取扱説明書/01_電動機類/01_荏原製作所_雑排水用水中ポンプ_DN_取扱説明書.pdf", "page": 1, "title": "01_荏原製作所_雑排水用水中ポンプ_DN_取扱説明書.pdf", "level": 1}]; // manual.py が埋め込む
+
+    // ==========================================
+    // 初期化
+    // ==========================================
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    const params = new URLSearchParams(location.search);
+    const pdfPath = params.get('pdf');   // 例: docs/06_取扱説明書/機器A.pdf
+    const pdfName = pdfPath ? pdfPath.split('/').pop() : '';
+
+    document.getElementById('doc-title').textContent = pdfName || 'ドキュメント';
+
+    if (!pdfPath) {
+        showError('URLにPDFパスが指定されていません。');
+    } else {
+        loadPDF(pdfPath);
+    }
+
+    // ==========================================
+    // 目次の構築
+    // ==========================================
+    const myToc = TOC_DATA.filter(t => t.pdf === pdfPath || t.pdf === pdfName);
+    let pageCanvases = []; // canvas要素のリスト（インデックス＝ページ番号-1）
+
+    function buildToc() {
+        const list = document.getElementById('toc-list');
+        if (myToc.length === 0) return; // no-toc メッセージをそのまま表示
+        list.innerHTML = '';
+        myToc.forEach((entry, idx) => {
+            const div = document.createElement('div');
+            div.className = 'toc-item';
+            div.dataset.level = entry.level || 1;
+            div.dataset.page = entry.page;
+            div.dataset.idx = idx;
+            div.innerHTML = `<span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${entry.title}</span><span class="toc-page">${entry.page}p</span>`;
+            div.onclick = () => jumpToPage(entry.page, idx);
+            list.appendChild(div);
+        });
+    }
+
+    function jumpToPage(page, tocIdx) {
+        const canvas = pageCanvases[page - 1];
+        if (canvas) {
+            canvas.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        setActiveToc(tocIdx);
+    }
+
+    function setActiveToc(idx) {
+        document.querySelectorAll('.toc-item').forEach(el => el.classList.remove('active'));
+        const target = document.querySelector(`.toc-item[data-idx="${idx}"]`);
+        if (target) {
+            target.classList.add('active');
+            target.scrollIntoView({ block: 'nearest' });
+        }
+    }
+
+    // スクロール時に現在ページを検出してハイライト更新
+    function onPdfScroll() {
+        if (myToc.length === 0 || pageCanvases.length === 0) return;
+        const pdfArea = document.getElementById('pdf-area');
+        const scrollTop = pdfArea.scrollTop + 80;
+
+        // 現在表示中のページを特定
+        let currentPage = 1;
+        for (let i = 0; i < pageCanvases.length; i++) {
+            if (pageCanvases[i] && pageCanvases[i].parentElement) {
+                const top = pageCanvases[i].parentElement.offsetTop;
+                if (top <= scrollTop) currentPage = i + 1;
+            }
+        }
+
+        // そのページに対応する目次項目を検索（最後に一致するもの）
+        let matchIdx = -1;
+        myToc.forEach((entry, idx) => {
+            if (entry.page <= currentPage) matchIdx = idx;
+        });
+        if (matchIdx >= 0) setActiveToc(matchIdx);
+
+        // ページ情報更新
+        document.getElementById('page-info').textContent = `${currentPage} / ${pageCanvases.length} ページ`;
+    }
+
+    // ==========================================
+    // PDF読み込み・描画
+    // ==========================================
+    async function loadPDF(path) {
+        try {
+            const loadingTask = pdfjsLib.getDocument(path);
+            const pdf = await loadingTask.promise;
+            const totalPages = pdf.numPages;
+
+            document.getElementById('page-info').textContent = `1 / ${totalPages} ページ`;
+            document.getElementById('loading-text').textContent = `ページを描画中... (0 / ${totalPages})`;
+
+            buildToc();
+
+            const pdfArea = document.getElementById('pdf-area');
+            pageCanvases = new Array(totalPages).fill(null);
+
+            // 全ページ順番に描画
+            for (let i = 1; i <= totalPages; i++) {
+                document.getElementById('loading-text').textContent = `ページを描画中... (${i} / ${totalPages})`;
+                const page = await pdf.getPage(i);
+                const viewport = page.getViewport({ scale: 1.5 });
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'page-wrapper';
+                wrapper.style.position = 'relative';
+                wrapper.style.marginBottom = '4px';
+
+                const label = document.createElement('div');
+                label.className = 'page-label';
+                label.textContent = `${i} ページ`;
+
+                const canvas = document.createElement('canvas');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                pageCanvases[i - 1] = canvas;
+
+                wrapper.appendChild(label);
+                wrapper.appendChild(canvas);
+                pdfArea.appendChild(wrapper);
+
+                const ctx = canvas.getContext('2d');
+                await page.render({ canvasContext: ctx, viewport }).promise;
+            }
+
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('page-info').textContent = `1 / ${totalPages} ページ`;
+
+        } catch (e) {
+            showError(e.message || 'PDFの読み込みに失敗しました。');
+        }
+    }
+
+    function showError(msg) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('error-detail').textContent = msg;
+        document.getElementById('error-msg').classList.add('show');
+    }
+
+    // ==========================================
+    // UI操作
+    // ==========================================
+    let tocCollapsed = false;
+    function toggleToc() {
+        tocCollapsed = !tocCollapsed;
+        const sidebar = document.getElementById('toc-sidebar');
+        const btn = document.getElementById('toc-toggle');
+        sidebar.classList.toggle('collapsed', tocCollapsed);
+        btn.textContent = tocCollapsed ? '▶' : '◀';
+    }
+
+    function toggleMobileToc() {
+        document.getElementById('toc-sidebar').classList.toggle('mobile-open');
+    }
+</script>
+</body>
+</html>

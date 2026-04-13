@@ -1,46 +1,78 @@
-import csv
 import json
+import os
+import csv
 
+# ==========================================
+# 設定
+# ==========================================
 PASSWORD_SET = "sanixskg393290"
-CSV_PATH = r"\\dcfs01\77拠点共有\工場別共有\506ひびき工場\技術\有機性脱水汚泥燃料施設\◆第1期\★完成図書\plant-docs\directory_map.csv"
+TEMPLATE_FILE = "template.html"
+OUTPUT_FILE = "index.html"
+CSV_FILE = "directory_map.csv"
 
-def generate_web_system():
+def build_html():
     file_data = []
-    exclude_files = ["16_機器仕様書.csv", "17_その他機器仕様書.csv"]
+    detected_categories = set() # 検出したカテゴリーを記録
+    
+    if not os.path.exists(CSV_FILE):
+        print(f"エラー: {CSV_FILE} が見つかりません。")
+        return
+
     try:
-        with open(CSV_PATH, newline='', encoding='utf-8') as csvfile:
-            reader = csv.DictReader(csvfile)
-            l_c1, l_c2 = "", ""
+        with open(CSV_FILE, "r", encoding="utf-8-sig") as f:
+            reader = csv.DictReader(f)
             for row in reader:
-                name = row.get('ファイル名', '').strip()
-                if not name or name in exclude_files: continue
-                fp = row.get('フルパス', '').strip()
-                path = "docs" + fp.split("docs")[-1].replace("\\", "/") if "docs" in fp else fp
-                c1 = row.get('サブフォルダ1', '').strip() or l_c1
-                l_c1 = c1
-                c2 = row.get('サブフォルダ2', '').strip() or l_c2
-                l_c2 = c2
-                file_data.append({"name": name, "path": path, "cat1": c1, "cat2": c2, "is_new": "2026" in name})
+                full_path = row.get('フルパス', '')
+                sub1 = row.get('サブフォルダ1', '') # ここで 08_作業要領書 を拾う
+
+                # 1. ファイルがある場合
+                if full_path and 'docs' in full_path:
+                    normalized_path = full_path.replace('\\', '/')
+                    parts = normalized_path.split('/')
+                    docs_idx = parts.index('docs')
+                    if len(parts) > docs_idx + 1:
+                        cat = parts[docs_idx + 1]
+                        detected_categories.add(cat)
+                        file_data.append({
+                            "cat1": cat,
+                            "name": parts[-1],
+                            "path": normalized_path
+                        })
+                
+                # 2. ファイルはないが、カテゴリー名（サブフォルダ1）だけある場合（準備中用）
+                elif sub1 and sub1 not in detected_categories:
+                    detected_categories.add(sub1)
+                    file_data.append({
+                        "cat1": sub1,
+                        "name": "（準備中）", # 画面に表示する文字
+                        "path": "javascript:void(0)" # クリックしてもどこにも飛ばない
+                    })
+
     except Exception as e:
-        print(f"エラー: {e}"); return
+        print(f"CSV読み込みエラー: {e}")
+        return
 
-    if "08_作業要領書" not in [f['cat1'] for f in file_data]:
-        file_data.append({"name": "", "path": "", "cat1": "08_作業要領書", "cat2": "", "is_new": False})
+    # テンプレート読み込みと出力処理
+    if not os.path.exists(TEMPLATE_FILE):
+        print(f"エラー: {TEMPLATE_FILE} が見つかりません。")
+        return
+    
+    with open(TEMPLATE_FILE, "r", encoding="utf-8") as f:
+        html_template = f.read()
 
-    json_files = json.dumps(file_data, ensure_ascii=False)
+    file_data.sort(key=lambda x: x['cat1'])
+    json_data = json.dumps(file_data, ensure_ascii=False)
+    
+    output_html = html_template.replace("{{JSON_DATA}}", json_data)
+    output_html = output_html.replace("{{PASSWORD}}", PASSWORD_SET)
 
-    try:
-        # template.htmlを読み込んで、データを流し込む
-        with open("template.html", "r", encoding="utf-8") as f:
-            temp = f.read()
-        
-        output = temp.replace("{{JSON_DATA}}", json_files).replace("{{PASSWORD}}", PASSWORD_SET)
-        
-        with open("index.html", "w", encoding="utf-8") as f:
-            f.write(output)
-        print("完了：スマホ対応版 index.html を作成しました")
-    except FileNotFoundError:
-        print("エラー：template.html が同じフォルダに見当たりません")
+    with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+        f.write(output_html)
+    
+    print("-" * 30)
+    print(f"【更新成功】")
+    print(f"検出されたカテゴリー: {sorted(list(detected_categories))}")
+    print("-" * 30)
 
 if __name__ == "__main__":
-    generate_web_system()
+    build_html()

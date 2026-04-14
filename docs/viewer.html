@@ -14,40 +14,16 @@
         #doc-title { font-size: 0.95rem; font-weight: bold; color: #f1f5f9; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
         #page-info { font-size: 0.8rem; color: #94a3b8; white-space: nowrap; flex-shrink: 0; }
 
-        /* メインレイアウト */
-        #body { display: flex; flex: 1; overflow: hidden; }
-
-        /* 目次サイドバー */
-        #toc-sidebar { width: 260px; background: #1e293b; border-right: 1px solid #334155; display: flex; flex-direction: column; flex-shrink: 0; transition: 0.3s; }
-        #toc-header { padding: 12px 15px; border-bottom: 1px solid #334155; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
-        #toc-title { font-weight: bold; color: #22c55e; font-size: 0.9rem; }
-        #toc-toggle { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 1.1rem; padding: 2px 6px; }
-        #toc-list { flex: 1; overflow-y: auto; padding: 8px 0; }
-        #toc-sidebar.collapsed { width: 42px; }
-        #toc-sidebar.collapsed #toc-title,
-        #toc-sidebar.collapsed #toc-list { display: none; }
-
-        /* 目次アイテム */
-        .toc-item { padding: 7px 15px; cursor: pointer; font-size: 0.82rem; color: #94a3b8; border-left: 3px solid transparent; line-height: 1.4; transition: 0.15s; display: flex; align-items: baseline; gap: 6px; }
-        .toc-item:hover { background: #334155; color: #f1f5f9; }
-        .toc-item.active { background: rgba(34,197,94,0.15); color: #22c55e; border-left-color: #22c55e; font-weight: bold; }
-        .toc-item[data-level="0"] { font-weight: bold; color: #f1f5f9; font-size: 0.88rem; }
-        .toc-item[data-level="1"] { padding-left: 15px; }
-        .toc-item[data-level="2"] { padding-left: 28px; font-size: 0.78rem; }
-        .toc-item[data-level="3"] { padding-left: 40px; font-size: 0.75rem; }
-        .toc-page { font-size: 0.7rem; color: #475569; white-space: nowrap; margin-left: auto; }
-        .toc-item.active .toc-page { color: #86efac; }
-
-        /* no-toc メッセージ */
-        #no-toc { padding: 20px 15px; color: #475569; font-size: 0.8rem; line-height: 1.6; }
-
         /* PDFエリア */
         #pdf-area { flex: 1; overflow: auto; background: #334155; display: flex; flex-direction: column; align-items: center; padding: 15px; gap: 10px; }
 
-        /* ページラベル */
+        /* ページ */
         .page-wrapper { position: relative; }
         .page-label { position: absolute; top: -20px; left: 0; font-size: 0.7rem; color: #94a3b8; }
         canvas { display: block; box-shadow: 0 4px 20px rgba(0,0,0,0.5); background: white; }
+
+        /* 未描画ページのプレースホルダー */
+        .page-placeholder { background: #1e293b; display: flex; align-items: center; justify-content: center; color: #475569; font-size: 0.8rem; }
 
         /* ローディング */
         #loading { position: fixed; inset: 0; background: #0f172a; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; z-index: 9999; }
@@ -60,16 +36,9 @@
         #error-msg.show { display: flex; }
 
         /* スクロールバー */
-        #toc-list::-webkit-scrollbar, #pdf-area::-webkit-scrollbar { width: 6px; }
-        #toc-list::-webkit-scrollbar-track, #pdf-area::-webkit-scrollbar-track { background: transparent; }
-        #toc-list::-webkit-scrollbar-thumb, #pdf-area::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
-
-        @media (max-width: 768px) {
-            #toc-sidebar { position: fixed; left: -270px; top: 0; bottom: 0; z-index: 1000; width: 260px !important; }
-            #toc-sidebar.mobile-open { left: 0; }
-            #mobile-toc-btn { display: flex !important; }
-        }
-        #mobile-toc-btn { display: none; background: #334155; color: white; border: none; padding: 7px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; align-items: center; gap: 5px; }
+        #pdf-area::-webkit-scrollbar { width: 6px; }
+        #pdf-area::-webkit-scrollbar-track { background: transparent; }
+        #pdf-area::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
     </style>
 </head>
 <body>
@@ -88,40 +57,19 @@
 
 <div id="header">
     <button id="back-btn" onclick="history.back()">← 戻る</button>
-    <button id="mobile-toc-btn" onclick="toggleMobileToc()">📋 目次</button>
     <div id="doc-title">読み込み中...</div>
     <div id="page-info"></div>
 </div>
 
-<div id="body">
-    <div id="toc-sidebar">
-        <div id="toc-header">
-            <span id="toc-title">📋 目次</span>
-            <button id="toc-toggle" onclick="toggleToc()" title="目次を折りたたむ">◀</button>
-        </div>
-        <div id="toc-list">
-            <div id="no-toc">この文書の目次データはまだ登録されていません。<br><br>toc.csv に追加することで目次が表示されます。</div>
-        </div>
-    </div>
-
-    <div id="pdf-area" onscroll="onPdfScroll()"></div>
-</div>
+<div id="pdf-area" onscroll="onPdfScroll()"></div>
 
 <!-- PDF.js CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
-    // ==========================================
-    // 設定
-    // ==========================================
-    const TOC_DATA = [{"pdf": "docs/06_取扱説明書/01_電動機類/01_荏原製作所_雑排水用水中ポンプ_DN_取扱説明書.pdf", "page": 1, "title": "表紙", "level": 0}, {"pdf": "docs/06_取扱説明書/01_電動機類/01_荏原製作所_雑排水用水中ポンプ_DN_取扱説明書.pdf", "page": 2, "title": "1. 警告表示について", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/01_荏原製作所_雑排水用水中ポンプ_DN_取扱説明書.pdf", "page": 3, "title": "2. 安全上の注意", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/01_荏原製作所_雑排水用水中ポンプ_DN_取扱説明書.pdf", "page": 5, "title": "3. はじめに", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/01_荏原製作所_雑排水用水中ポンプ_DN_取扱説明書.pdf", "page": 5, "title": "3-1. ポンプと附属品の確認", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/01_荏原製作所_雑排水用水中ポンプ_DN_取扱説明書.pdf", "page": 5, "title": "3-2. 銘板の確認", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/01_荏原製作所_雑排水用水中ポンプ_DN_取扱説明書.pdf", "page": 6, "title": "4. 製品仕様", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/01_荏原製作所_雑排水用水中ポンプ_DN_取扱説明書.pdf", "page": 7, "title": "5. 据付", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/01_荏原製作所_雑排水用水中ポンプ_DN_取扱説明書.pdf", "page": 7, "title": "5-1. 据付前の確認", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/01_荏原製作所_雑排水用水中ポンプ_DN_取扱説明書.pdf", "page": 7, "title": "5-2. 据付", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/01_荏原製作所_雑排水用水中ポンプ_DN_取扱説明書.pdf", "page": 9, "title": "5-3. 電気配線", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/01_荏原製作所_雑排水用水中ポンプ_DN_取扱説明書.pdf", "page": 10, "title": "6. 運転", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/01_荏原製作所_雑排水用水中ポンプ_DN_取扱説明書.pdf", "page": 10, "title": "6-1. 始動する前に", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/01_荏原製作所_雑排水用水中ポンプ_DN_取扱説明書.pdf", "page": 10, "title": "6-2. 試運転（DN型・DNA型）", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/01_荏原製作所_雑排水用水中ポンプ_DN_取扱説明書.pdf", "page": 10, "title": "6-3. 試運転（DNJ型）", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/01_荏原製作所_雑排水用水中ポンプ_DN_取扱説明書.pdf", "page": 11, "title": "6-4. 運転", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/01_荏原製作所_雑排水用水中ポンプ_DN_取扱説明書.pdf", "page": 11, "title": "7. 保守", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/01_荏原製作所_雑排水用水中ポンプ_DN_取扱説明書.pdf", "page": 11, "title": "7-1. 日常の点検", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/01_荏原製作所_雑排水用水中ポンプ_DN_取扱説明書.pdf", "page": 11, "title": "7-2. 定期点検", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/01_荏原製作所_雑排水用水中ポンプ_DN_取扱説明書.pdf", "page": 12, "title": "7-3. 運転休止時の注意", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/01_荏原製作所_雑排水用水中ポンプ_DN_取扱説明書.pdf", "page": 12, "title": "7-4. 消耗品について", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/01_荏原製作所_雑排水用水中ポンプ_DN_取扱説明書.pdf", "page": 13, "title": "8. 故障の原因と対策", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/01_荏原製作所_雑排水用水中ポンプ_DN_取扱説明書.pdf", "page": 14, "title": "9. 構造", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/01_荏原製作所_雑排水用水中ポンプ_DN_取扱説明書.pdf", "page": 16, "title": "10. 分解・組立", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/01_荏原製作所_雑排水用水中ポンプ_DN_取扱説明書.pdf", "page": 17, "title": "11. 保証", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/01_荏原製作所_雑排水用水中ポンプ_DN_取扱説明書.pdf", "page": 17, "title": "12. 修理・アフターサービス", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/02_荏原製作所_ラインポンプ_LPD型_取扱説明書.pdf", "page": 1, "title": "表紙", "level": 0}, {"pdf": "docs/06_取扱説明書/01_電動機類/02_荏原製作所_ラインポンプ_LPD型_取扱説明書.pdf", "page": 2, "title": "1. 警告表示について", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/02_荏原製作所_ラインポンプ_LPD型_取扱説明書.pdf", "page": 3, "title": "2. 安全上の注意", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/02_荏原製作所_ラインポンプ_LPD型_取扱説明書.pdf", "page": 6, "title": "3. はじめに", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/02_荏原製作所_ラインポンプ_LPD型_取扱説明書.pdf", "page": 6, "title": "3-1. ポンプと附属品の確認", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/02_荏原製作所_ラインポンプ_LPD型_取扱説明書.pdf", "page": 6, "title": "3-2. 銘板の確認", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/02_荏原製作所_ラインポンプ_LPD型_取扱説明書.pdf", "page": 7, "title": "4. 製品仕様", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/02_荏原製作所_ラインポンプ_LPD型_取扱説明書.pdf", "page": 11, "title": "5. 据付", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/02_荏原製作所_ラインポンプ_LPD型_取扱説明書.pdf", "page": 11, "title": "5-1. 据付位置", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/02_荏原製作所_ラインポンプ_LPD型_取扱説明書.pdf", "page": 12, "title": "5-2. 配管", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/02_荏原製作所_ラインポンプ_LPD型_取扱説明書.pdf", "page": 13, "title": "5-3. 電気配線", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/02_荏原製作所_ラインポンプ_LPD型_取扱説明書.pdf", "page": 15, "title": "6. 運転", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/02_荏原製作所_ラインポンプ_LPD型_取扱説明書.pdf", "page": 16, "title": "6-1. 始動する前に", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/02_荏原製作所_ラインポンプ_LPD型_取扱説明書.pdf", "page": 16, "title": "6-2. 運転", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/02_荏原製作所_ラインポンプ_LPD型_取扱説明書.pdf", "page": 17, "title": "6-3. 停止", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/02_荏原製作所_ラインポンプ_LPD型_取扱説明書.pdf", "page": 17, "title": "6-4. 運転時の注意事項", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/02_荏原製作所_ラインポンプ_LPD型_取扱説明書.pdf", "page": 18, "title": "7. 保守", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/02_荏原製作所_ラインポンプ_LPD型_取扱説明書.pdf", "page": 20, "title": "7-1. 日常の点検", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/02_荏原製作所_ラインポンプ_LPD型_取扱説明書.pdf", "page": 20, "title": "7-2. ポンプの長期運転休止時と保管", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/02_荏原製作所_ラインポンプ_LPD型_取扱説明書.pdf", "page": 21, "title": "7-3. 消耗品", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/02_荏原製作所_ラインポンプ_LPD型_取扱説明書.pdf", "page": 23, "title": "8. 故障の原因と対策", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/02_荏原製作所_ラインポンプ_LPD型_取扱説明書.pdf", "page": 23, "title": "8-1. ポンプ", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/02_荏原製作所_ラインポンプ_LPD型_取扱説明書.pdf", "page": 24, "title": "8-2. 電動機", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/02_荏原製作所_ラインポンプ_LPD型_取扱説明書.pdf", "page": 25, "title": "9. 構造", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/02_荏原製作所_ラインポンプ_LPD型_取扱説明書.pdf", "page": 26, "title": "10. 分解・組立", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/02_荏原製作所_ラインポンプ_LPD型_取扱説明書.pdf", "page": 26, "title": "10-1. 分解", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/02_荏原製作所_ラインポンプ_LPD型_取扱説明書.pdf", "page": 27, "title": "10-2. 組立", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/02_荏原製作所_ラインポンプ_LPD型_取扱説明書.pdf", "page": 28, "title": "11. 保証", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/02_荏原製作所_ラインポンプ_LPD型_取扱説明書.pdf", "page": 28, "title": "12. 修理・アフターサービス", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/03_荏原製作所_高圧渦流ポンプ_RK型_取扱説明書.pdf", "page": 1, "title": "表紙", "level": 0}, {"pdf": "docs/06_取扱説明書/01_電動機類/03_荏原製作所_高圧渦流ポンプ_RK型_取扱説明書.pdf", "page": 2, "title": "1. 警告表示について", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/03_荏原製作所_高圧渦流ポンプ_RK型_取扱説明書.pdf", "page": 3, "title": "2. 安全上の注意", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/03_荏原製作所_高圧渦流ポンプ_RK型_取扱説明書.pdf", "page": 6, "title": "3. はじめに", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/03_荏原製作所_高圧渦流ポンプ_RK型_取扱説明書.pdf", "page": 6, "title": "3-1. ポンプと附属品の確認", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/03_荏原製作所_高圧渦流ポンプ_RK型_取扱説明書.pdf", "page": 6, "title": "3-2. 銘板の確認", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/03_荏原製作所_高圧渦流ポンプ_RK型_取扱説明書.pdf", "page": 7, "title": "4. 製品仕様", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/03_荏原製作所_高圧渦流ポンプ_RK型_取扱説明書.pdf", "page": 10, "title": "5. 据付", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/03_荏原製作所_高圧渦流ポンプ_RK型_取扱説明書.pdf", "page": 11, "title": "5-1. 据付位置", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/03_荏原製作所_高圧渦流ポンプ_RK型_取扱説明書.pdf", "page": 12, "title": "5-2. 配管", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/03_荏原製作所_高圧渦流ポンプ_RK型_取扱説明書.pdf", "page": 13, "title": "5-3. 芯出し調整", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/03_荏原製作所_高圧渦流ポンプ_RK型_取扱説明書.pdf", "page": 15, "title": "5-4. 電気配線", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/03_荏原製作所_高圧渦流ポンプ_RK型_取扱説明書.pdf", "page": 16, "title": "6. 運転", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/03_荏原製作所_高圧渦流ポンプ_RK型_取扱説明書.pdf", "page": 17, "title": "6-1. 始動する前に", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/03_荏原製作所_高圧渦流ポンプ_RK型_取扱説明書.pdf", "page": 17, "title": "6-2. 運転", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/03_荏原製作所_高圧渦流ポンプ_RK型_取扱説明書.pdf", "page": 17, "title": "6-3. グランドパッキンの調整", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/03_荏原製作所_高圧渦流ポンプ_RK型_取扱説明書.pdf", "page": 18, "title": "6-4. グランドパッキンの交換", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/03_荏原製作所_高圧渦流ポンプ_RK型_取扱説明書.pdf", "page": 19, "title": "7. 保守", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/03_荏原製作所_高圧渦流ポンプ_RK型_取扱説明書.pdf", "page": 21, "title": "7-1. 日常の点検", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/03_荏原製作所_高圧渦流ポンプ_RK型_取扱説明書.pdf", "page": 22, "title": "7-2. ポンプの運転", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/03_荏原製作所_高圧渦流ポンプ_RK型_取扱説明書.pdf", "page": 22, "title": "7-3. ポンプの長期運転休止時と保管", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/03_荏原製作所_高圧渦流ポンプ_RK型_取扱説明書.pdf", "page": 22, "title": "7-4. 消耗品", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/03_荏原製作所_高圧渦流ポンプ_RK型_取扱説明書.pdf", "page": 24, "title": "8. 故障の原因と対策", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/03_荏原製作所_高圧渦流ポンプ_RK型_取扱説明書.pdf", "page": 26, "title": "9. 構造", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/03_荏原製作所_高圧渦流ポンプ_RK型_取扱説明書.pdf", "page": 26, "title": "9-1. 斜傾図", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/03_荏原製作所_高圧渦流ポンプ_RK型_取扱説明書.pdf", "page": 26, "title": "9-2. 附属品", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/03_荏原製作所_高圧渦流ポンプ_RK型_取扱説明書.pdf", "page": 27, "title": "10. 分解・組立", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/03_荏原製作所_高圧渦流ポンプ_RK型_取扱説明書.pdf", "page": 27, "title": "10-1. 分解", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/03_荏原製作所_高圧渦流ポンプ_RK型_取扱説明書.pdf", "page": 28, "title": "10-2. 組立", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/03_荏原製作所_高圧渦流ポンプ_RK型_取扱説明書.pdf", "page": 29, "title": "11. 保証", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/03_荏原製作所_高圧渦流ポンプ_RK型_取扱説明書.pdf", "page": 29, "title": "12. 修理・アフターサービス", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/04_鶴見製作所_50PU2.75-63_取扱説明書.pdf", "page": 1, "title": "表紙", "level": 0}, {"pdf": "docs/06_取扱説明書/01_電動機類/04_鶴見製作所_50PU2.75-63_取扱説明書.pdf", "page": 1, "title": "1. 安全のために必ずお守りください", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/04_鶴見製作所_50PU2.75-63_取扱説明書.pdf", "page": 3, "title": "2. 各部名称", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/04_鶴見製作所_50PU2.75-63_取扱説明書.pdf", "page": 3, "title": "3. ご使用の前に", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/04_鶴見製作所_50PU2.75-63_取扱説明書.pdf", "page": 4, "title": "4. 据付け", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/04_鶴見製作所_50PU2.75-63_取扱説明書.pdf", "page": 7, "title": "5. 電気配線", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/04_鶴見製作所_50PU2.75-63_取扱説明書.pdf", "page": 8, "title": "6. 運転", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/04_鶴見製作所_50PU2.75-63_取扱説明書.pdf", "page": 10, "title": "7. 保守・点検", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/04_鶴見製作所_50PU2.75-63_取扱説明書.pdf", "page": 12, "title": "8. 分解・組立要領", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/04_鶴見製作所_50PU2.75-63_取扱説明書.pdf", "page": 14, "title": "9. 故障の原因と対策", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/04_鶴見製作所_50PU2.75-63_取扱説明書.pdf", "page": 15, "title": "10. 修理と保証", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/05_鶴見製作所_80PUT22.2-61_取扱説明書.pdf", "page": 1, "title": "表紙", "level": 0}, {"pdf": "docs/06_取扱説明書/01_電動機類/05_鶴見製作所_80PUT22.2-61_取扱説明書.pdf", "page": 1, "title": "1. 安全のために必ずお守りください", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/05_鶴見製作所_80PUT22.2-61_取扱説明書.pdf", "page": 3, "title": "2. 各部名称", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/05_鶴見製作所_80PUT22.2-61_取扱説明書.pdf", "page": 3, "title": "3. ご使用の前に", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/05_鶴見製作所_80PUT22.2-61_取扱説明書.pdf", "page": 4, "title": "4. 据付け", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/05_鶴見製作所_80PUT22.2-61_取扱説明書.pdf", "page": 6, "title": "5. 電気配線", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/05_鶴見製作所_80PUT22.2-61_取扱説明書.pdf", "page": 7, "title": "6. 運転", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/05_鶴見製作所_80PUT22.2-61_取扱説明書.pdf", "page": 9, "title": "7. 保守・点検", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/05_鶴見製作所_80PUT22.2-61_取扱説明書.pdf", "page": 11, "title": "8. 分解・組立要領", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/05_鶴見製作所_80PUT22.2-61_取扱説明書.pdf", "page": 12, "title": "9. 故障の原因と対策", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/05_鶴見製作所_80PUT22.2-61_取扱説明書.pdf", "page": 13, "title": "10. 修理と保証", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 1, "title": "表紙", "level": 0}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 2, "title": "1. 安全にお使いいただくために", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 2, "title": "1.1 本書の使い方", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 2, "title": "1.2 ポンプの使用条件", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 3, "title": "1.3 取扱い上のご注意", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 3, "title": "1.3.1 据付け時のご注意", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 3, "title": "1.3.2 運転時のご注意", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 4, "title": "1.3.3 分解・組立て時のご注意", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 5, "title": "2. 開梱", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 6, "title": "3. 型式表示", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 7, "title": "4. 各部の名称と構造", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 7, "title": "4.1 各部の名称と機能", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 8, "title": "4.2 吸込みと吐出動作", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 9, "title": "5. 仕様", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 10, "title": "6. 接液部", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 11, "title": "7. 性能曲線", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 12, "title": "8. 据付け", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 13, "title": "8.1 据付けの前に", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 13, "title": "8.1.1 ポンプ回転方向の確認", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 13, "title": "8.1.2 原動機の動力確認", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 14, "title": "8.1.3 据付け時の留意点", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 15, "title": "8.1.4 据付け寸法", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 17, "title": "8.2 ポンプの据付け", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 17, "title": "8.2.1 据付け手順", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 19, "title": "8.2.2 その他の据付け", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 19, "title": "8.2.3 安全カバーの取付け", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 20, "title": "9. 配管と配線", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 20, "title": "9.1 吸込・吐出口の配管", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 21, "title": "9.2 配線", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 21, "title": "9.2.1 三相モータの配線", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 21, "title": "9.2.2 単相モータの配線", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 22, "title": "10. 運転", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 22, "title": "10.1 運転上の注意", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 23, "title": "10.2 取扱液について", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 24, "title": "10.3 回転数と取扱液の粘度", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 24, "title": "10.4 その他", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 25, "title": "11. 保守点検", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 25, "title": "11.1 日常点検", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 26, "title": "11.2 消耗品の交換時期", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 26, "title": "11.3 インペラの交換", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 26, "title": "11.3.1 インペラの取外し", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 27, "title": "11.3.2 インペラの取付け", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 28, "title": "11.4 メカニカルシールの交換", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 28, "title": "11.4.1 メカニカルシールの取外し", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 31, "title": "11.4.2 メカニカルシールの取付け", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 34, "title": "11.5 その他接液部部品の交換", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 34, "title": "11.5.1 フロントプレートの交換", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 35, "title": "11.5.2 ポンプケーシング・ウィアープレートの交換", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 38, "title": "11.6 接液部交換部品", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 38, "title": "11.6.1 FG10", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 39, "title": "11.6.2 FG15/20/25", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 40, "title": "11.6.3 FG40/50/65", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 41, "title": "12. 故障の原因と対策", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 42, "title": "13. パーツリスト", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 42, "title": "13.1 FG10", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 43, "title": "13.2 FG15/20/35", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 44, "title": "13.3 FG40/50/65", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 45, "title": "14. 保証と修理", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 45, "title": "14.1 保証について", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/06_日機装エイコー_FGシリーズ_取扱説明書.pdf", "page": 45, "title": "14.2 修理について", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 1, "title": "表紙", "level": 0}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 2, "title": "製品の確認", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 4, "title": "安全上のご注意", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 4, "title": "警告", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 6, "title": "注意", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 8, "title": "取り扱い上のご注意", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 9, "title": "概要", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 9, "title": "はじめに", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 9, "title": "ポンプの構造と機構", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 10, "title": "ポンプの作動原理", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 10, "title": "2連式往復動機構", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 10, "title": "吐出量の変更", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 11, "title": "各部の名称", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 12, "title": "型式表示の見かた", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 13, "title": "設置", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 13, "title": "設置場所", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 14, "title": "推奨配管例", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 14, "title": "周辺機器", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 15, "title": "吐出口と吸込み口の接続", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 16, "title": "配管", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 16, "title": "配管時のお願い", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 17, "title": "スラリー液移送時のお願い", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 17, "title": "配管についての注意", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 18, "title": "配線", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 18, "title": "電源の接続方法", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 19, "title": "操作", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 19, "title": "運転前の準備", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 19, "title": "ポンプの操作", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 19, "title": "試運転を開始する", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 21, "title": "運転を停止・休止する場合のご注意", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 21, "title": "運転を再開する場合のご注意", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 22, "title": "保守", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 22, "title": "故障かな?と思ったら", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 24, "title": "点検", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 24, "title": "日常点検", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 24, "title": "定期点検", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 24, "title": "減速機について", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 25, "title": "液漏れの対処について", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 25, "title": "ポンプヘッドとブラケット間からの液漏れ", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 25, "title": "ブラケット下部（空気穴）からの液漏れ", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 25, "title": "駆動部のオイル交換", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 26, "title": "オイルの交換", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 27, "title": "消耗部品の交換", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 27, "title": "作業時のご注意", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 28, "title": "接液部の交換と接続", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 28, "title": "01/03 VC/V6", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 30, "title": "05/1 VC/V6/VS", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 32, "title": "2/4/6/8 VC/V6/VS", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 34, "title": "01/03 S6", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 36, "title": "05/1 S6", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 38, "title": "2/4/6/8 S6", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 40, "title": "2/4/6/8 VS", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 42, "title": "仕様・外形寸法", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 42, "title": "ポンプ仕様", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 42, "title": "VC/V6/S6タイプ", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 42, "title": "VSタイプ", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 43, "title": "基本仕様", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 43, "title": "取り付け可能モータ仕様", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 44, "title": "外形寸法", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 44, "title": "フランジタイプ", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 45, "title": "ホースタイプ", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 45, "title": "ユニオンタイプ", "level": 3}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 46, "title": "性能曲線", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 46, "title": "VC/V6タイプ", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 48, "title": "S6タイプ", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 50, "title": "VSタイプ", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 52, "title": "保証・修理サービス", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 52, "title": "保証の期間と範囲", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/07_イワキ_定量ポンプ_TD-F_取扱説明書.pdf", "page": 52, "title": "修理について・故障したときは", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/08_兵神装備_NYS(01A878RC)_288882_取扱説明書.pdf", "page": 1, "title": "表紙", "level": 0}, {"pdf": "docs/06_取扱説明書/01_電動機類/08_兵神装備_NYS(01A878RC)_288882_取扱説明書.pdf", "page": 1, "title": "1. モーノポンプの概要", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/08_兵神装備_NYS(01A878RC)_288882_取扱説明書.pdf", "page": 1, "title": "2. ご使用になる前に", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/08_兵神装備_NYS(01A878RC)_288882_取扱説明書.pdf", "page": 1, "title": "3. 運転しましょう", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/08_兵神装備_NYS(01A878RC)_288882_取扱説明書.pdf", "page": 1, "title": "4. 分解・組立および保守点検", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/08_兵神装備_NYS(01A878RC)_288882_取扱説明書.pdf", "page": 1, "title": "5. 異常を感じたら", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/09_兵神装備_CY(ファイン)(01A848RB)_290898_取扱説明書.pdf", "page": 1, "title": "表紙", "level": 0}, {"pdf": "docs/06_取扱説明書/01_電動機類/09_兵神装備_CY(ファイン)(01A848RB)_290898_取扱説明書.pdf", "page": 1, "title": "1. モーノポンプの概要", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/09_兵神装備_CY(ファイン)(01A848RB)_290898_取扱説明書.pdf", "page": 1, "title": "2. ご使用になる前に", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/09_兵神装備_CY(ファイン)(01A848RB)_290898_取扱説明書.pdf", "page": 1, "title": "3. 運転しましょう", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/09_兵神装備_CY(ファイン)(01A848RB)_290898_取扱説明書.pdf", "page": 1, "title": "4. 分解・組立および保守点検", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/09_兵神装備_CY(ファイン)(01A848RB)_290898_取扱説明書.pdf", "page": 1, "title": "5. 異常を感じたら", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/10_アンレット_BS型_取扱説明書.pdf", "page": 1, "title": "表紙", "level": 0}, {"pdf": "docs/06_取扱説明書/01_電動機類/10_アンレット_BS型_取扱説明書.pdf", "page": 1, "title": "1. 警告表示について", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/10_アンレット_BS型_取扱説明書.pdf", "page": 1, "title": "2. はじめに", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/10_アンレット_BS型_取扱説明書.pdf", "page": 1, "title": "3. 製品仕様", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/10_アンレット_BS型_取扱説明書.pdf", "page": 2, "title": "4. 据付", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/10_アンレット_BS型_取扱説明書.pdf", "page": 5, "title": "5. 運転", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/10_アンレット_BS型_取扱説明書.pdf", "page": 7, "title": "6. 保守と点検", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/10_アンレット_BS型_取扱説明書.pdf", "page": 11, "title": "7. 故障の原因と対策", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/10_アンレット_BS型_取扱説明書.pdf", "page": 12, "title": "8. 構造", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/10_アンレット_BS型_取扱説明書.pdf", "page": 12, "title": "9. 修理と保証", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/10_アンレット_BS型_取扱説明書.pdf", "page": 13, "title": "10. アフターサービス網", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/11_理研機器_電動ポンプ_MP-15S_取扱説明書.pdf", "page": 1, "title": "表紙", "level": 0}, {"pdf": "docs/06_取扱説明書/01_電動機類/11_理研機器_電動ポンプ_MP-15S_取扱説明書.pdf", "page": 1, "title": "1. 概要", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/11_理研機器_電動ポンプ_MP-15S_取扱説明書.pdf", "page": 2, "title": "2. 各部の名称及び説明", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/11_理研機器_電動ポンプ_MP-15S_取扱説明書.pdf", "page": 6, "title": "3. 仕様", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/11_理研機器_電動ポンプ_MP-15S_取扱説明書.pdf", "page": 7, "title": "4. ご使用上の注意事項", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/11_理研機器_電動ポンプ_MP-15S_取扱説明書.pdf", "page": 8, "title": "5. 設置方法", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/11_理研機器_電動ポンプ_MP-15S_取扱説明書.pdf", "page": 10, "title": "6. ご使用前の準備", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/11_理研機器_電動ポンプ_MP-15S_取扱説明書.pdf", "page": 11, "title": "7. 保守点検", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/11_理研機器_電動ポンプ_MP-15S_取扱説明書.pdf", "page": 11, "title": "(1) 稼動前の点検事項", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/11_理研機器_電動ポンプ_MP-15S_取扱説明書.pdf", "page": 11, "title": "(2) 稼動中の点検事項", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/11_理研機器_電動ポンプ_MP-15S_取扱説明書.pdf", "page": 11, "title": "(3) 稼動後の点検事項", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/11_理研機器_電動ポンプ_MP-15S_取扱説明書.pdf", "page": 11, "title": "(4) 作動油の交換について", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/11_理研機器_電動ポンプ_MP-15S_取扱説明書.pdf", "page": 12, "title": "8. 圧力スイッチの説明", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/11_理研機器_電動ポンプ_MP-15S_取扱説明書.pdf", "page": 14, "title": "9. 操作方法", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/11_理研機器_電動ポンプ_MP-15S_取扱説明書.pdf", "page": 14, "title": "(1) MP－15C", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/11_理研機器_電動ポンプ_MP-15S_取扱説明書.pdf", "page": 15, "title": "(2) MP－15S", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/11_理研機器_電動ポンプ_MP-15S_取扱説明書.pdf", "page": 16, "title": "(3) MP－15TK", "level": 2}, {"pdf": "docs/06_取扱説明書/01_電動機類/11_理研機器_電動ポンプ_MP-15S_取扱説明書.pdf", "page": 17, "title": "10. 高圧安全弁の調整方法", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/11_理研機器_電動ポンプ_MP-15S_取扱説明書.pdf", "page": 18, "title": "11. 低圧安全弁・アンロード弁の調整について", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/11_理研機器_電動ポンプ_MP-15S_取扱説明書.pdf", "page": 19, "title": "12. ポンプのエア抜きについて", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/11_理研機器_電動ポンプ_MP-15S_取扱説明書.pdf", "page": 20, "title": "13. 故障の解説", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/11_理研機器_電動ポンプ_MP-15S_取扱説明書.pdf", "page": 22, "title": "14. 内部構造図・部品表", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/11_理研機器_電動ポンプ_MP-15S_取扱説明書.pdf", "page": 26, "title": "15. 電気回路図", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/11_理研機器_電動ポンプ_MP-15S_取扱説明書.pdf", "page": 27, "title": "16. 高圧ホースの取扱い", "level": 1}, {"pdf": "docs/06_取扱説明書/01_電動機類/12_タカトテクニカ_静音オイルレスエアーコンプレッサー_取扱説明書.pdf", "page": 1, "title": "表紙", "level": 0}]; // manual.py が埋め込む
-
-    // ==========================================
-    // 初期化
-    // ==========================================
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
     const params = new URLSearchParams(location.search);
-    const pdfPath = params.get('pdf');   // 例: docs/06_取扱説明書/機器A.pdf
+    const pdfPath = params.get('pdf');
     const pdfName = pdfPath ? pdfPath.split('/').pop() : '';
 
     document.getElementById('doc-title').textContent = pdfName || 'ドキュメント';
@@ -133,215 +81,146 @@
     }
 
     // ==========================================
-    // 目次の構築
-    // ==========================================
-    // pdfPathはdocs/なし・docs/あり・../始まりの3パターンを照合する
-    const pdfPathWithDocs = pdfPath ? 'docs/' + pdfPath : '';
-    const pdfPathNorm = pdfPath ? pdfPath.replace(/^\.\.\//, 'docs/') : '';
-    const myToc = TOC_DATA.filter(t => t.pdf === pdfPath || t.pdf === pdfPathNorm || t.pdf === pdfPathWithDocs || t.pdf === pdfName);
-    let pageCanvases = []; // canvas要素のリスト（インデックス＝ページ番号-1）
-
-    function buildToc() {
-        const list = document.getElementById('toc-list');
-        if (myToc.length === 0) return; // no-toc メッセージをそのまま表示
-        list.innerHTML = '';
-        myToc.forEach((entry, idx) => {
-            const div = document.createElement('div');
-            div.className = 'toc-item';
-            div.dataset.level = entry.level || 1;
-            div.dataset.page = entry.page;
-            div.dataset.idx = idx;
-            div.innerHTML = `<span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${entry.title}</span><span class="toc-page">${entry.page}p</span>`;
-            div.onclick = () => jumpToPage(entry.page, idx);
-            list.appendChild(div);
-        });
-    }
-
-    function jumpToPage(page, tocIdx) {
-        const canvas = pageCanvases[page - 1];
-        if (canvas) {
-            canvas.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-        setActiveToc(tocIdx);
-    }
-
-    function setActiveToc(idx) {
-        document.querySelectorAll('.toc-item').forEach(el => el.classList.remove('active'));
-        const target = document.querySelector(`.toc-item[data-idx="${idx}"]`);
-        if (target) {
-            target.classList.add('active');
-            target.scrollIntoView({ block: 'nearest' });
-        }
-    }
-
-    // スクロール時に現在ページを検出してハイライト更新
-    function onPdfScroll() {
-        if (myToc.length === 0 || pageCanvases.length === 0) return;
-        const pdfArea = document.getElementById('pdf-area');
-        const scrollTop = pdfArea.scrollTop + 80;
-
-        // 現在表示中のページを特定
-        let currentPage = 1;
-        for (let i = 0; i < pageCanvases.length; i++) {
-            if (pageCanvases[i] && pageCanvases[i].parentElement) {
-                const top = pageCanvases[i].parentElement.offsetTop;
-                if (top <= scrollTop) currentPage = i + 1;
-            }
-        }
-
-        // そのページに対応する目次項目を検索（最後に一致するもの）
-        let matchIdx = -1;
-        myToc.forEach((entry, idx) => {
-            if (entry.page <= currentPage) matchIdx = idx;
-        });
-        if (matchIdx >= 0) setActiveToc(matchIdx);
-
-        // ページ情報更新
-        document.getElementById('page-info').textContent = `${currentPage} / ${pageCanvases.length} ページ`;
-    }
-
-    // ==========================================
-    // PDF読み込み・描画（遅延読み込み方式）
+    // PDF読み込み・遅延描画
     // ==========================================
     let pdfDoc = null;
-    const RENDER_AHEAD = 3;   // 表示中ページの前後何ページを先読みするか
+    let pageCanvases = [];
+    let pageWrappers = [];
     const SCALE = 1.5;
-    const renderingPages = new Set(); // 描画中ページ番号を管理
+    const RENDER_AHEAD = 2; // 前後2ページ先読み
+    const renderingPages = new Set();
+    let observer = null;
 
     async function loadPDF(path) {
         try {
-            const loadingTask = pdfjsLib.getDocument(path);
-            pdfDoc = await loadingTask.promise;
-            const totalPages = pdfDoc.numPages;
+            pdfDoc = await pdfjsLib.getDocument(path).promise;
+            const total = pdfDoc.numPages;
 
-            document.getElementById('page-info').textContent = `1 / ${totalPages} ページ`;
-            document.getElementById('loading-text').textContent = `読み込み中...`;
+            document.getElementById('page-info').textContent = `1 / ${total} ページ`;
 
-            buildToc();
+            // 最初のページだけ先に描画してサイズを取得
+            const firstPage = await pdfDoc.getPage(1);
+            const vp = firstPage.getViewport({ scale: SCALE });
+            const W = Math.round(vp.width);
+            const H = Math.round(vp.height);
 
             const pdfArea = document.getElementById('pdf-area');
-            pageCanvases = new Array(totalPages).fill(null);
+            pageCanvases = [];
+            pageWrappers = [];
 
-            // 全ページ分のプレースホルダー（空のwrapper）を先に作成
-            // 高さを仮設定しておくことでスクロール位置が正しく計算できる
-            for (let i = 1; i <= totalPages; i++) {
+            // 全ページのwrapperを正確なサイズで作成
+            for (let i = 1; i <= total; i++) {
                 const wrapper = document.createElement('div');
                 wrapper.className = 'page-wrapper';
-                wrapper.id = `page-wrapper-${i}`;
+                wrapper.id = `pw-${i}`;
+                wrapper.dataset.page = i;
                 wrapper.style.position = 'relative';
                 wrapper.style.marginBottom = '4px';
-                wrapper.style.minHeight = '400px'; // 仮の高さ
+                wrapper.style.width = W + 'px';
+                wrapper.style.height = H + 'px';
 
                 const label = document.createElement('div');
                 label.className = 'page-label';
                 label.textContent = `${i} ページ`;
 
+                // プレースホルダー
+                const placeholder = document.createElement('div');
+                placeholder.className = 'page-placeholder';
+                placeholder.style.width = W + 'px';
+                placeholder.style.height = H + 'px';
+                placeholder.textContent = `${i} ページ`;
+
                 const canvas = document.createElement('canvas');
-                canvas.id = `page-canvas-${i}`;
-                pageCanvases[i - 1] = canvas;
+                canvas.style.display = 'none';
+                pageCanvases.push(canvas);
 
                 wrapper.appendChild(label);
+                wrapper.appendChild(placeholder);
                 wrapper.appendChild(canvas);
                 pdfArea.appendChild(wrapper);
+                pageWrappers.push(wrapper);
             }
 
-            // ローディング非表示・最初のページ周辺を描画開始
             document.getElementById('loading').style.display = 'none';
-            document.getElementById('page-info').textContent = `1 / ${totalPages} ページ`;
 
-            await renderPageRange(1, Math.min(RENDER_AHEAD + 1, totalPages));
+            // 最初の数ページを即描画
+            await renderPageRange(1, Math.min(RENDER_AHEAD + 1, total));
 
-            // IntersectionObserverで表示領域に入ったページを随時描画
-            setupLazyRender(totalPages);
+            // IntersectionObserverで遅延描画
+            observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (!entry.isIntersecting) return;
+                    const p = parseInt(entry.target.dataset.page);
+                    if (!p) return;
+                    const from = Math.max(1, p - 1);
+                    const to = Math.min(total, p + RENDER_AHEAD);
+                    renderPageRange(from, to);
+                });
+            }, {
+                root: pdfArea,
+                rootMargin: '300px 0px',
+                threshold: 0
+            });
+
+            pageWrappers.forEach(w => observer.observe(w));
 
         } catch (e) {
             showError(e.message || 'PDFの読み込みに失敗しました。');
         }
     }
 
-    // 指定範囲のページを並列描画
     async function renderPageRange(from, to) {
         const tasks = [];
-        for (let i = from; i <= to; i++) {
-            tasks.push(renderPage(i));
-        }
+        for (let i = from; i <= to; i++) tasks.push(renderPage(i));
         await Promise.all(tasks);
     }
 
-    // 1ページ描画
     async function renderPage(pageNum) {
         if (!pdfDoc) return;
-        if (renderingPages.has(pageNum)) return;
         const canvas = pageCanvases[pageNum - 1];
         if (!canvas) return;
-        if (canvas.dataset.rendered === '1') return; // 描画済みはスキップ
+        if (canvas.dataset.rendered === '1') return;
+        if (renderingPages.has(pageNum)) return;
 
         renderingPages.add(pageNum);
         try {
             const page = await pdfDoc.getPage(pageNum);
-            const viewport = page.getViewport({ scale: SCALE });
-            canvas.width = viewport.width;
-            canvas.height = viewport.height;
+            const vp = page.getViewport({ scale: SCALE });
+            canvas.width = vp.width;
+            canvas.height = vp.height;
 
-            // wrapperの仮高さを実際のサイズに更新
-            const wrapper = document.getElementById(`page-wrapper-${pageNum}`);
-            if (wrapper) wrapper.style.minHeight = '';
-
-            const ctx = canvas.getContext('2d');
-            await page.render({ canvasContext: ctx, viewport }).promise;
+            await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
             canvas.dataset.rendered = '1';
+
+            // プレースホルダーを非表示にしてcanvasを表示
+            const wrapper = document.getElementById(`pw-${pageNum}`);
+            if (wrapper) {
+                const ph = wrapper.querySelector('.page-placeholder');
+                if (ph) ph.style.display = 'none';
+                canvas.style.display = 'block';
+                wrapper.style.height = '';
+            }
         } finally {
             renderingPages.delete(pageNum);
         }
     }
 
-    // IntersectionObserverでビューポートに入ったページを描画
-    function setupLazyRender(totalPages) {
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (!entry.isIntersecting) return;
-                const pageNum = parseInt(entry.target.dataset.page);
-                if (!pageNum) return;
-                // 前後RENDER_AHEADページも先読み
-                const from = Math.max(1, pageNum - 1);
-                const to = Math.min(totalPages, pageNum + RENDER_AHEAD);
-                renderPageRange(from, to);
-            });
-        }, {
-            root: document.getElementById('pdf-area'),
-            rootMargin: '200px 0px',
-            threshold: 0
+    // ページ情報更新
+    function onPdfScroll() {
+        if (!pageCanvases.length) return;
+        const pdfArea = document.getElementById('pdf-area');
+        const scrollTop = pdfArea.scrollTop + 80;
+        let current = 1;
+        pageWrappers.forEach((w, i) => {
+            if (w.offsetTop <= scrollTop) current = i + 1;
         });
-
-        for (let i = 1; i <= totalPages; i++) {
-            const wrapper = document.getElementById(`page-wrapper-${i}`);
-            if (wrapper) {
-                wrapper.dataset.page = i;
-                observer.observe(wrapper);
-            }
-        }
+        document.getElementById('page-info').textContent = `${current} / ${pageCanvases.length} ページ`;
     }
 
     function showError(msg) {
         document.getElementById('loading').style.display = 'none';
         document.getElementById('error-detail').textContent = msg;
         document.getElementById('error-msg').classList.add('show');
-    }
-
-    // ==========================================
-    // UI操作
-    // ==========================================
-    let tocCollapsed = false;
-    function toggleToc() {
-        tocCollapsed = !tocCollapsed;
-        const sidebar = document.getElementById('toc-sidebar');
-        const btn = document.getElementById('toc-toggle');
-        sidebar.classList.toggle('collapsed', tocCollapsed);
-        btn.textContent = tocCollapsed ? '▶' : '◀';
-    }
-
-    function toggleMobileToc() {
-        document.getElementById('toc-sidebar').classList.toggle('mobile-open');
     }
 </script>
 </body>

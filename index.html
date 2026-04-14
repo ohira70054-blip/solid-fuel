@@ -156,21 +156,18 @@
                 let statusHtml = '';
                 if(cat.includes("08_作業要領書")) statusHtml = '<span class="nav-status">準備中</span>';
                 const isCADCat = cat.includes("07_CAD図面");
-                const isManualCat = cat.includes(MANUAL_CATEGORY);
                 const n = document.createElement('div'); n.className = 'nav-item'; n.innerHTML = `<span>${cat}</span>${statusHtml}`;
                 n.onclick = () => { window.scrollTo({top: document.getElementById(id).offsetTop - 70, behavior:'smooth'}); if(window.innerWidth <= 768) toggleSidebar(); };
                 nav.appendChild(n);
                 const s = document.createElement('div'); s.id = id; s.className = 'section-card';
                 s.innerHTML = `<h2 style="font-size:1.1rem; border-bottom:2px solid var(--primary); padding-bottom:5px; margin-top:0;">${cat} ${statusHtml}</h2><div class="file-list"></div>`;
                 const listDiv = s.querySelector('.file-list');
-                grp[cat].forEach(f => { if(f.name) listDiv.appendChild(item(f, isCADCat, isManualCat)); });
+                grp[cat].forEach(f => { if(f.name) listDiv.appendChild(item(f, isCADCat)); });
                 area.appendChild(s);
             });
         }
 
-        const MANUAL_CATEGORY = "06_取扱説明書"; // manual.py が埋め込む
-
-        function item(f, showExt, isManualCat) {
+        function item(f, showExt) {
             const nameLower = f.name.toLowerCase();
             const isP = nameLower.endsWith('.pdf');
             const isF = favorites.includes(f.path);
@@ -189,13 +186,8 @@
             }
 
             let fileLink;
-            if (isP && isManualCat) {
-                // 取扱説明書：目次サイドバー付きビューアで開く
-                // viewer.htmlはdocs/内にあるため先頭のdocs/を../に変換して渡す
-                const pdfRelPath = f.path.replace(/^docs\//, '');
-                const viewerUrl = `docs/viewer.html?pdf=${encodeURIComponent(pdfRelPath)}`;
-                fileLink = `<a href="${viewerUrl}" target="_blank">${f.name}</a>`;
-            } else if (isP) {
+            if (isP) {
+                // PDF：別タブで直接開く
                 fileLink = `<a href="${f.path}" target="_blank">${f.name}</a>`;
             } else {
                 fileLink = `<a href="#" onclick="downloadFile('${f.path}', '${f.name}'); return false;">${f.name}</a>`;

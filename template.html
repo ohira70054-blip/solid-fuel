@@ -50,6 +50,17 @@
         .dl-spinner { width: 40px; height: 40px; border: 4px solid #334155; border-top-color: #22c55e; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 15px; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        /* NEWバッジ */
+        .badge-new { font-size: 9px; background: #ef4444; color: white; padding: 2px 5px; border-radius: 4px; font-weight: bold; flex-shrink: 0; animation: pulse-new 1.5s ease-in-out infinite; }
+        @keyframes pulse-new { 0%,100% { opacity:1; } 50% { opacity:0.6; } }
+
+        /* 更新履歴テーブル */
+        .history-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+        .history-table th { background: var(--btn-bg); padding: 7px 10px; text-align: left; border-bottom: 2px solid var(--primary); }
+        .history-table td { padding: 7px 10px; border-bottom: 1px solid var(--border); }
+        .history-table tr:hover td { background: var(--btn-bg); }
+        .history-date { color: #64748b; white-space: nowrap; }
+
         @media (max-width: 768px) {
             .sidebar { position: fixed; left: -260px; top: 0; bottom: 0; background: var(--header-bg); z-index: 2000; padding: 20px; transition: 0.3s; width: 240px; box-shadow: 5px 0 15px rgba(0,0,0,0.1); }
             .sidebar.open { left: 0; }
@@ -92,6 +103,10 @@
                 </div>
                 <div style="font-weight:bold; color:var(--primary); margin-bottom:15px; font-size:0.9rem;">カテゴリー</div>
                 <div id="side-nav"></div>
+                <div style="border-top:1px solid var(--border); margin:10px 0;"></div>
+                <div class="nav-item" onclick="showHistory()" id="nav-history">
+                    <span>📋 更新履歴</span>
+                </div>
                 <div class="help-section">
                     <div class="help-title">📖 使い方</div>
                     <div class="help-text">
@@ -157,7 +172,7 @@
                 if(cat.includes("08_作業要領書")) statusHtml = '<span class="nav-status">準備中</span>';
                 const isCADCat = cat.includes("07_CAD図面");
                 const n = document.createElement('div'); n.className = 'nav-item'; n.innerHTML = `<span>${cat}</span>${statusHtml}`;
-                n.onclick = () => { window.scrollTo({top: document.getElementById(id).offsetTop - 70, behavior:'smooth'}); if(window.innerWidth <= 768) toggleSidebar(); };
+                n.onclick = () => { if(!document.getElementById(id)) { render(currentData || allFiles); setTimeout(() => { const el = document.getElementById(id); if(el) window.scrollTo({top: el.offsetTop - 70, behavior:'smooth'}); }, 50); } else { window.scrollTo({top: document.getElementById(id).offsetTop - 70, behavior:'smooth'}); } if(window.innerWidth <= 768) toggleSidebar(); };
                 nav.appendChild(n);
                 const s = document.createElement('div'); s.id = id; s.className = 'section-card';
                 s.innerHTML = `<h2 style="font-size:1.1rem; border-bottom:2px solid var(--primary); padding-bottom:5px; margin-top:0;">${cat} ${statusHtml}</h2><div class="file-list"></div>`;
@@ -165,6 +180,16 @@
                 grp[cat].forEach(f => { if(f.name) listDiv.appendChild(item(f, isCADCat)); });
                 area.appendChild(s);
             });
+        }
+
+        // 登録日から10日以内かどうか判定
+        function isNew(dateStr) {
+            if (!dateStr) return false;
+            const parts = dateStr.split('/');
+            if (parts.length !== 3) return false;
+            const reg = new Date(parts[0], parts[1]-1, parts[2]);
+            const diff = (new Date() - reg) / (1000 * 60 * 60 * 24);
+            return diff <= 10;
         }
 
         function item(f, showExt) {
@@ -187,14 +212,18 @@
 
             let fileLink;
             if (isP) {
+                // PDF：別タブで直接開く
                 fileLink = `<a href="${f.path}" target="_blank">${f.name}</a>`;
             } else {
                 fileLink = `<a href="#" onclick="downloadFile('${f.path}', '${f.name}'); return false;">${f.name}</a>`;
             }
 
+            const newBadge = isNew(f.date) ? '<span class="badge-new">NEW</span>' : '';
+
             d.innerHTML = `
                 <span onclick="toggleFav(event, '${f.path}')" style="cursor:pointer; color:${isF?'#f59e0b':'#ccc'}; font-size:1.2rem;">★</span>
                 <span style="font-size:9px; background:${extColor}; color:white; padding:2px 5px; border-radius:4px; flex-shrink:0;">${extLabel}</span>
+                ${newBadge}
                 ${fileLink}
             `;
             return d;
@@ -223,6 +252,56 @@
             } finally {
                 overlay.classList.remove('active');
             }
+        }
+
+        // 更新履歴表示
+        function showHistory() {
+            if(window.innerWidth <= 768) toggleSidebar();
+            const area = document.getElementById('data-area');
+
+            // 日付あり・新しい順にソート
+            const dated = allFiles
+                .filter(f => f.date)
+                .sort((a, b) => {
+                    const toD = s => { const p=s.split('/'); return new Date(p[0],p[1]-1,p[2]); };
+                    return toD(b.date) - toD(a.date);
+                });
+
+            // 日付ごとにグループ化
+            const byDate = dated.reduce((acc, f) => {
+                if (!acc[f.date]) acc[f.date] = [];
+                acc[f.date].push(f);
+                return acc;
+            }, {});
+
+            let rows = '';
+            Object.keys(byDate).sort((a,b) => {
+                const toD = s => { const p=s.split('/'); return new Date(p[0],p[1]-1,p[2]); };
+                return toD(b) - toD(a);
+            }).forEach(date => {
+                byDate[date].forEach((f, i) => {
+                    const newBadge = isNew(f.date) ? '<span class="badge-new" style="margin-right:4px;">NEW</span>' : '';
+                    const nameLower = f.name.toLowerCase();
+                    const isP = nameLower.endsWith('.pdf');
+                    const link = isP
+                        ? `<a href="${f.path}" target="_blank" style="color:var(--primary);">${f.name}</a>`
+                        : `<a href="#" onclick="downloadFile('${f.path}','${f.name}');return false;" style="color:var(--primary);">${f.name}</a>`;
+                    rows += `<tr>
+                        <td class="history-date">${i === 0 ? date : ''}</td>
+                        <td style="color:#64748b;font-size:0.78rem;">${f.cat1}</td>
+                        <td>${newBadge}${link}</td>
+                    </tr>`;
+                });
+            });
+
+            area.innerHTML = `
+                <div class="section-card">
+                    <h2 style="font-size:1.1rem; border-bottom:2px solid var(--primary); padding-bottom:5px; margin-top:0;">📋 更新履歴</h2>
+                    <table class="history-table">
+                        <thead><tr><th>登録日</th><th>カテゴリー</th><th>ファイル名</th></tr></thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>`;
         }
 
         function toggleFav(e, p) { e.stopPropagation(); const i = favorites.indexOf(p); if(i > -1) favorites.splice(i, 1); else favorites.push(p); localStorage.setItem('sanix_favs', JSON.stringify(favorites)); render(currentData || allFiles); }

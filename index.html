@@ -172,7 +172,7 @@
                 if(cat.includes("08_作業要領書")) statusHtml = '<span class="nav-status">準備中</span>';
                 const isCADCat = cat.includes("07_CAD図面");
                 const n = document.createElement('div'); n.className = 'nav-item'; n.innerHTML = `<span>${cat}</span>${statusHtml}`;
-                n.onclick = () => { window.scrollTo({top: document.getElementById(id).offsetTop - 70, behavior:'smooth'}); if(window.innerWidth <= 768) toggleSidebar(); };
+                n.onclick = () => { if(!document.getElementById(id)) { render(currentData || allFiles); setTimeout(() => { const el = document.getElementById(id); if(el) window.scrollTo({top: el.offsetTop - 70, behavior:'smooth'}); }, 50); } else { window.scrollTo({top: document.getElementById(id).offsetTop - 70, behavior:'smooth'}); } if(window.innerWidth <= 768) toggleSidebar(); };
                 nav.appendChild(n);
                 const s = document.createElement('div'); s.id = id; s.className = 'section-card';
                 s.innerHTML = `<h2 style="font-size:1.1rem; border-bottom:2px solid var(--primary); padding-bottom:5px; margin-top:0;">${cat} ${statusHtml}</h2><div class="file-list"></div>`;

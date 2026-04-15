@@ -338,6 +338,7 @@
         // ==========================================
         let previewTimeout = null;
         let pdfCache = {};
+        let currentRenderTask = null;
 
         function showPreview(e, path, name, isPdf) {
             clearTimeout(previewTimeout);
@@ -353,6 +354,7 @@
                 if (!isPdf) {
                     canvas.style.display = 'none';
                     noPreview.style.display = 'block';
+                    noPreview.textContent = 'プレビュー非対応';
                     return;
                 }
 
@@ -360,28 +362,33 @@
                 noPreview.style.display = 'none';
 
                 try {
-                    // PDF.jsが未ロードなら動的に読み込む
                     if (!window.pdfjsLib) {
                         await loadPdfJs();
                     }
-                    // キャッシュ確認
+                    // 日本語パスをエンコード
+                    const encodedPath = path.split('/').map((seg, i) => i === 0 ? seg : encodeURIComponent(seg)).join('/');
                     if (pdfCache[path]) {
-                        renderPage(pdfCache[path], canvas);
+                        await renderPage(pdfCache[path], canvas);
                         return;
                     }
-                    const pdf = await pdfjsLib.getDocument(path).promise;
+                    const pdf = await pdfjsLib.getDocument(encodedPath).promise;
                     pdfCache[path] = pdf;
-                    renderPage(pdf, canvas);
+                    await renderPage(pdf, canvas);
                 } catch(err) {
                     canvas.style.display = 'none';
                     noPreview.style.display = 'block';
                     noPreview.textContent = '読み込みエラー';
                 }
-            }, 300); // 300ms待ってから表示（すぐ通過した場合は表示しない）
+            }, 300);
         }
 
         function hidePreview() {
             clearTimeout(previewTimeout);
+            // 進行中のレンダリングをキャンセル
+            if (currentRenderTask) {
+                currentRenderTask.cancel();
+                currentRenderTask = null;
+            }
             document.getElementById('preview-popup').style.display = 'none';
         }
 
@@ -418,11 +425,19 @@
         }
 
         async function renderPage(pdf, canvas) {
+            if (currentRenderTask) {
+                currentRenderTask.cancel();
+                currentRenderTask = null;
+            }
             const page = await pdf.getPage(1);
             const viewport = page.getViewport({ scale: 0.5 });
             canvas.width  = viewport.width;
             canvas.height = viewport.height;
-            await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            currentRenderTask = page.render({ canvasContext: ctx, viewport });
+            await currentRenderTask.promise;
+            currentRenderTask = null;
         }
 
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidebar-overlay').classList.toggle('open'); }

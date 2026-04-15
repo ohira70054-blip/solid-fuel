@@ -51,8 +51,8 @@
         @keyframes spin { to { transform: rotate(360deg); } }
 
         /* ホバープレビュー */
-        #preview-popup { position: fixed; z-index: 9000; pointer-events: none; display: none; background: var(--header-bg); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); padding: 8px; width: 200px; }
-        #preview-popup canvas { display: block; width: 100%; border-radius: 4px; }
+        #preview-popup { position: fixed; z-index: 9000; pointer-events: none; display: none; background: var(--header-bg); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); padding: 8px; width: 260px; }
+        #preview-popup iframe { display: block; width: 244px; height: 180px; border: none; border-radius: 4px; background: #fff; }
         #preview-popup .preview-name { font-size: 0.72rem; color: #64748b; margin-top: 6px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         #preview-popup .preview-no { font-size: 0.75rem; color: #94a3b8; text-align: center; padding: 20px 0; }
 
@@ -87,7 +87,7 @@
 
     <!-- ホバープレビューポップアップ -->
     <div id="preview-popup">
-        <canvas id="preview-canvas"></canvas>
+        <iframe id="preview-iframe" src="about:blank"></iframe>
         <div id="preview-no" class="preview-no" style="display:none;">プレビュー非対応</div>
         <div class="preview-name" id="preview-name"></div>
     </div>
@@ -337,14 +337,12 @@
         // ホバープレビュー（PDF.js使用）
         // ==========================================
         let previewTimeout = null;
-        let pdfCache = {};
-        let currentRenderTask = null;
 
         function showPreview(e, path, name, isPdf) {
             clearTimeout(previewTimeout);
-            previewTimeout = setTimeout(async () => {
-                const popup = document.getElementById('preview-popup');
-                const canvas = document.getElementById('preview-canvas');
+            previewTimeout = setTimeout(() => {
+                const popup    = document.getElementById('preview-popup');
+                const iframe   = document.getElementById('preview-iframe');
                 const noPreview = document.getElementById('preview-no');
                 document.getElementById('preview-name').textContent = name;
 
@@ -352,42 +350,24 @@
                 popup.style.display = 'block';
 
                 if (!isPdf) {
-                    canvas.style.display = 'none';
+                    iframe.style.display = 'none';
                     noPreview.style.display = 'block';
                     noPreview.textContent = 'プレビュー非対応';
                     return;
                 }
 
-                canvas.style.display = 'block';
                 noPreview.style.display = 'none';
-
-                try {
-                    if (!window.pdfjsLib) {
-                        await loadPdfJs();
-                    }
-                    // パスはすでにエンコード済みのためそのまま使用
-                    if (pdfCache[path]) {
-                        await renderPage(pdfCache[path], canvas);
-                        return;
-                    }
-                    const pdf = await pdfjsLib.getDocument(path).promise;
-                    pdfCache[path] = pdf;
-                    await renderPage(pdf, canvas);
-                } catch(err) {
-                    canvas.style.display = 'none';
-                    noPreview.style.display = 'block';
-                    noPreview.textContent = '読み込みエラー';
+                iframe.style.display = 'block';
+                // 同じファイルなら再読み込みしない
+                if (iframe.dataset.src !== path) {
+                    iframe.src = path;
+                    iframe.dataset.src = path;
                 }
             }, 300);
         }
 
         function hidePreview() {
             clearTimeout(previewTimeout);
-            // 進行中のレンダリングをキャンセル
-            if (currentRenderTask) {
-                currentRenderTask.cancel();
-                currentRenderTask = null;
-            }
             document.getElementById('preview-popup').style.display = 'none';
         }
 
@@ -396,10 +376,8 @@
             const margin = 12;
             let x = e.clientX + margin;
             let y = e.clientY + margin;
-            // 画面右端に収まらない場合は左に表示
-            if (x + 220 > window.innerWidth) x = e.clientX - 220 - margin;
-            // 画面下端に収まらない場合は上に表示
-            if (y + 260 > window.innerHeight) y = e.clientY - 260 - margin;
+            if (x + 280 > window.innerWidth)  x = e.clientX - 280 - margin;
+            if (y + 220 > window.innerHeight) y = e.clientY - 220 - margin;
             popup.style.left = x + 'px';
             popup.style.top  = y + 'px';
         }
@@ -408,36 +386,6 @@
             const popup = document.getElementById('preview-popup');
             if (popup.style.display === 'block') positionPopup(e);
         });
-
-        async function loadPdfJs() {
-            return new Promise((resolve, reject) => {
-                const script = document.createElement('script');
-                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-                script.onload = () => {
-                    pdfjsLib.GlobalWorkerOptions.workerSrc =
-                        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-                    resolve();
-                };
-                script.onerror = reject;
-                document.head.appendChild(script);
-            });
-        }
-
-        async function renderPage(pdf, canvas) {
-            if (currentRenderTask) {
-                currentRenderTask.cancel();
-                currentRenderTask = null;
-            }
-            const page = await pdf.getPage(1);
-            const viewport = page.getViewport({ scale: 0.5 });
-            canvas.width  = viewport.width;
-            canvas.height = viewport.height;
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            currentRenderTask = page.render({ canvasContext: ctx, viewport });
-            await currentRenderTask.promise;
-            currentRenderTask = null;
-        }
 
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidebar-overlay').classList.toggle('open'); }
     </script>

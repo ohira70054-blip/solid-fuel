@@ -67,6 +67,17 @@
         .history-table tr:hover td { background: var(--btn-bg); }
         .history-date { color: #64748b; white-space: nowrap; }
 
+        /* 目次ドロップダウン */
+        .toc-btn { background: #0ea5e9; color: white; border: none; padding: 2px 7px; border-radius: 4px; cursor: pointer; font-size: 0.72rem; flex-shrink: 0; white-space: nowrap; }
+        .toc-btn:hover { background: #0284c7; }
+        .toc-dropdown { display: none; position: fixed; z-index: 8000; background: var(--header-bg); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); padding: 6px 0; min-width: 260px; max-width: 360px; max-height: 320px; overflow-y: auto; }
+        .toc-dropdown.open { display: block; }
+        .toc-item { padding: 6px 14px; font-size: 0.8rem; cursor: pointer; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-left: 3px solid transparent; }
+        .toc-item:hover { background: var(--btn-bg); color: var(--primary); border-left-color: var(--primary); }
+        .toc-item.level-2 { padding-left: 24px; font-size: 0.75rem; color: #64748b; }
+        .toc-item.level-3 { padding-left: 34px; font-size: 0.72rem; color: #94a3b8; }
+        .toc-header { padding: 5px 14px 5px; font-size: 0.7rem; color: #94a3b8; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
+
         @media (max-width: 768px) {
             .sidebar { position: fixed; left: -260px; top: 0; bottom: 0; background: var(--header-bg); z-index: 2000; padding: 20px; transition: 0.3s; width: 240px; box-shadow: 5px 0 15px rgba(0,0,0,0.1); }
             .sidebar.open { left: 0; }
@@ -91,6 +102,9 @@
         <div id="preview-no" class="preview-no" style="display:none;">プレビュー非対応</div>
         <div class="preview-name" id="preview-name"></div>
     </div>
+
+    <!-- 目次ドロップダウン -->
+    <div id="toc-dropdown" class="toc-dropdown"></div>
 
     <div id="login-screen">
         <div class="login-card">
@@ -233,11 +247,19 @@
 
             const newBadge = isNew(f.date) ? '<span class="badge-new">NEW</span>' : '';
 
+            // 目次ボタン（06_取扱説明書 かつ toc あり）
+            const isManualsCAT = f.cat1 && f.cat1.includes('06_取扱説明書');
+            const hasToc = isManualsCAT && f.toc && f.toc.length > 0;
+            const tocBtn = hasToc
+                ? `<button class="toc-btn" onclick="toggleToc(event, '${f.path}')">📋 目次</button>`
+                : '';
+
             d.innerHTML = `
                 <span onclick="toggleFav(event, '${f.path}')" style="cursor:pointer; color:${isF?'#f59e0b':'#ccc'}; font-size:1.2rem;">★</span>
                 <span style="font-size:9px; background:${extColor}; color:white; padding:2px 5px; border-radius:4px; flex-shrink:0;">${extLabel}</span>
                 ${newBadge}
                 ${fileLink}
+                ${tocBtn}
             `;
             return d;
         }
@@ -333,6 +355,66 @@
             if(isDark) { document.body.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); btn.innerText = '🌙'; }
             else { document.body.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); btn.innerText = '☀️'; }
         }
+        // ==========================================
+        // 目次ドロップダウン
+        // ==========================================
+        let currentTocPath = null;
+
+        function toggleToc(e, pdfPath) {
+            e.stopPropagation();
+            const dropdown = document.getElementById('toc-dropdown');
+
+            // 同じボタンを再クリックしたら閉じる
+            if (currentTocPath === pdfPath && dropdown.classList.contains('open')) {
+                closeToc();
+                return;
+            }
+
+            // 対象ファイルのtocデータを取得
+            const fileObj = allFiles.find(f => f.path === pdfPath);
+            if (!fileObj || !fileObj.toc || fileObj.toc.length === 0) return;
+
+            // ドロップダウンの内容を生成
+            const items = fileObj.toc.map(t => {
+                const lvClass = t.level >= 3 ? 'level-3' : t.level === 2 ? 'level-2' : '';
+                const pageNum = typeof t.page === 'number' ? t.page : parseInt(t.page) || 1;
+                const url = `${pdfPath}#page=${pageNum}`;
+                return `<div class="toc-item ${lvClass}" onclick="openTocPage('${url}')">${t.title}<span style="float:right;color:#94a3b8;margin-left:8px;">${pageNum}p</span></div>`;
+            }).join('');
+
+            dropdown.innerHTML = `
+                <div class="toc-header">📋 ${fileObj.name}</div>
+                ${items}
+            `;
+
+            // 位置計算
+            const rect = e.target.getBoundingClientRect();
+            let top = rect.bottom + 4;
+            let left = rect.left;
+            if (left + 360 > window.innerWidth) left = window.innerWidth - 370;
+            if (top + 320 > window.innerHeight) top = rect.top - 324;
+            dropdown.style.top = top + window.scrollY + 'px';
+            dropdown.style.left = left + 'px';
+
+            dropdown.classList.add('open');
+            currentTocPath = pdfPath;
+        }
+
+        function openTocPage(url) {
+            window.open(url, '_blank');
+            closeToc();
+        }
+
+        function closeToc() {
+            document.getElementById('toc-dropdown').classList.remove('open');
+            currentTocPath = null;
+        }
+
+        // ドロップダウン外クリックで閉じる
+        document.addEventListener('click', (e) => {
+            if (!e.target.classList.contains('toc-btn')) closeToc();
+        });
+
         // ==========================================
         // ホバープレビュー（PDF.js使用）
         // ==========================================

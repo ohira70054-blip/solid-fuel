@@ -365,14 +365,12 @@
                     if (!window.pdfjsLib) {
                         await loadPdfJs();
                     }
-                    // raw.githubusercontent.com経由でアクセス（日本語パス対応）
-                    const encodedPath = path.split('/').map(seg => encodeURIComponent(seg)).join('/');
-                    const rawUrl = 'https://raw.githubusercontent.com/ohira70054-blip/solid-fuel/main/' + encodedPath;
+                    // パスはすでにエンコード済みのためそのまま使用
                     if (pdfCache[path]) {
                         await renderPage(pdfCache[path], canvas);
                         return;
                     }
-                    const pdf = await pdfjsLib.getDocument(rawUrl).promise;
+                    const pdf = await pdfjsLib.getDocument(path).promise;
                     pdfCache[path] = pdf;
                     await renderPage(pdf, canvas);
                 } catch(err) {

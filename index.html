@@ -238,9 +238,14 @@
                 extColor = '#64748b';
             }
 
+            // 取扱説明書カテゴリはPDFが大容量のためホバープレビュー無効
+            const noPreview = f.cat1 && f.cat1.includes('06_取扱説明書');
+
             let fileLink;
             if (isP) {
-                fileLink = `<a href="${f.path}" target="_blank" onmouseenter="showPreview(event,'${f.path}','${f.name}',true)" onmouseleave="hidePreview()">${f.name}</a>`;
+                fileLink = noPreview
+                    ? `<a href="${f.path}" target="_blank">${f.name}</a>`
+                    : `<a href="${f.path}" target="_blank" onmouseenter="showPreview(event,'${f.path}','${f.name}',true)" onmouseleave="hidePreview()">${f.name}</a>`;
             } else {
                 fileLink = `<a href="#" onclick="downloadFile('${f.path}', '${f.name}'); return false;" onmouseenter="showPreview(event,'${f.path}','${f.name}',false)" onmouseleave="hidePreview()">${f.name}</a>`;
             }

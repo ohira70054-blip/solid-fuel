@@ -392,8 +392,9 @@
                 ${items}
             `;
 
-            // 位置計算
-            const rect = e.target.getBoundingClientRect();
+            // 位置計算（e.targetがボタン内テキストの場合に備えてclosestで取得）
+            const btnEl = e.target.closest ? e.target.closest('.toc-btn') || e.target : e.target;
+            const rect = btnEl.getBoundingClientRect();
             let top = rect.bottom + 4;
             let left = rect.left;
             if (left + 360 > window.innerWidth) left = window.innerWidth - 370;

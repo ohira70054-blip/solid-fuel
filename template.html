@@ -140,6 +140,7 @@
                         <b>・絞り込み：</b>検索窓に文字入力<br>
                         <b>・お気に入り：</b>★をタップして固定<br>
                         <b>・閲覧：</b>PDFは別タブ、CADは保存<br>
+                        <b>・目次：</b>📋ボタンで目次表示、項目クリックでページジャンプ（取扱説明書のみ・PCのみ対応）<br>
                         <b>・プレビュー：</b>ファイル名にカーソルを当てる（PDFのみ）<br>
                         <b>・モード切替：</b>右上の ☀️/🌙 ボタン
                     </div>
@@ -238,9 +239,14 @@
                 extColor = '#64748b';
             }
 
+            // 取扱説明書カテゴリはPDFが大容量のためホバープレビュー無効
+            const noPreview = f.cat1 && f.cat1.includes('06_取扱説明書');
+
             let fileLink;
             if (isP) {
-                fileLink = `<a href="${f.path}" target="_blank" onmouseenter="showPreview(event,'${f.path}','${f.name}',true)" onmouseleave="hidePreview()">${f.name}</a>`;
+                fileLink = noPreview
+                    ? `<a href="${f.path}" target="_blank">${f.name}</a>`
+                    : `<a href="${f.path}" target="_blank" onmouseenter="showPreview(event,'${f.path}','${f.name}',true)" onmouseleave="hidePreview()">${f.name}</a>`;
             } else {
                 fileLink = `<a href="#" onclick="downloadFile('${f.path}', '${f.name}'); return false;" onmouseenter="showPreview(event,'${f.path}','${f.name}',false)" onmouseleave="hidePreview()">${f.name}</a>`;
             }
@@ -378,8 +384,8 @@
             const items = fileObj.toc.map(t => {
                 const lvClass = t.level >= 3 ? 'level-3' : t.level === 2 ? 'level-2' : '';
                 const pageNum = typeof t.page === 'number' ? t.page : parseInt(t.page) || 1;
-                const url = `${pdfPath}#page=${pageNum}`;
-                return `<div class="toc-item ${lvClass}" onclick="openTocPage('${url}')">${t.title}<span style="float:right;color:#94a3b8;margin-left:8px;">${pageNum}p</span></div>`;
+                const url = `${pdfPath}`;
+                return `<div class="toc-item ${lvClass}" onclick="openTocPage('${url}', ${pageNum})">${t.title}<span style="float:right;color:#94a3b8;margin-left:8px;">${pageNum}p</span></div>`;
             }).join('');
 
             dropdown.innerHTML = `
@@ -387,21 +393,22 @@
                 ${items}
             `;
 
-            // 位置計算
-            const rect = e.target.getBoundingClientRect();
+            // 位置計算（e.targetがボタン内テキストの場合に備えてclosestで取得）
+            const btnEl = e.target.closest ? e.target.closest('.toc-btn') || e.target : e.target;
+            const rect = btnEl.getBoundingClientRect();
             let top = rect.bottom + 4;
             let left = rect.left;
             if (left + 360 > window.innerWidth) left = window.innerWidth - 370;
             if (top + 320 > window.innerHeight) top = rect.top - 324;
-            dropdown.style.top = top + window.scrollY + 'px';
+            dropdown.style.top = top + 'px';
             dropdown.style.left = left + 'px';
 
             dropdown.classList.add('open');
             currentTocPath = pdfPath;
         }
 
-        function openTocPage(url) {
-            window.open(url, '_blank');
+        function openTocPage(pdfPath, pageNum) {
+            window.open(pdfPath + '#page=' + pageNum, '_blank');
             closeToc();
         }
 

@@ -7,150 +7,90 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: sans-serif; background: #0f172a; color: #f1f5f9; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-
         #header { background: #1e293b; border-bottom: 2px solid #22c55e; padding: 8px 15px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
         #back-btn { background: #22c55e; color: white; border: none; padding: 7px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; white-space: nowrap; }
         #doc-title { font-size: 0.95rem; font-weight: bold; color: #f1f5f9; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
         #page-info { font-size: 0.8rem; color: #94a3b8; white-space: nowrap; flex-shrink: 0; }
-
         #pdf-area { flex: 1; overflow: auto; background: #334155; display: flex; flex-direction: column; align-items: center; padding: 15px; gap: 10px; }
-
         .page-wrapper { position: relative; }
         .page-label { position: absolute; top: -20px; left: 0; font-size: 0.7rem; color: #94a3b8; }
         canvas { display: block; box-shadow: 0 4px 20px rgba(0,0,0,0.5); background: white; }
         .page-placeholder { background: #1e293b; display: flex; align-items: center; justify-content: center; color: #475569; font-size: 0.8rem; }
-
         #loading { position: fixed; inset: 0; background: #0f172a; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; z-index: 9999; }
         .spinner { width: 40px; height: 40px; border: 4px solid #334155; border-top-color: #22c55e; border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         #loading-text { color: #94a3b8; font-size: 0.9rem; }
-
         #error-msg { display: none; position: fixed; inset: 0; background: #0f172a; align-items: center; justify-content: center; flex-direction: column; gap: 15px; }
         #error-msg.show { display: flex; }
-
         #pdf-area::-webkit-scrollbar { width: 6px; }
         #pdf-area::-webkit-scrollbar-track { background: transparent; }
         #pdf-area::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
     </style>
 </head>
 <body>
-
-<div id="loading">
-    <div class="spinner"></div>
-    <div id="loading-text">PDFを読み込み中...</div>
-</div>
-
+<div id="loading"><div class="spinner"></div><div id="loading-text">PDFを読み込み中...</div></div>
 <div id="error-msg">
     <div style="font-size:2rem;">⚠️</div>
     <div style="color:#f87171; font-weight:bold;">PDFを読み込めませんでした</div>
     <div id="error-detail" style="color:#94a3b8; font-size:0.85rem;"></div>
     <button onclick="history.back()" style="margin-top:10px; background:#22c55e; color:white; border:none; padding:10px 20px; border-radius:6px; cursor:pointer;">← 戻る</button>
 </div>
-
 <div id="header">
     <button id="back-btn" onclick="history.back()">← 戻る</button>
     <div id="doc-title">読み込み中...</div>
     <div id="page-info"></div>
 </div>
-
-<div id="pdf-area"></div>
-
-<script type="module">
-    import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs';
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs';
-
+<div id="pdf-area" onscroll="onPdfScroll()"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     const params = new URLSearchParams(location.search);
     const pdfPath = params.get('pdf');
     const pdfName = pdfPath ? decodeURIComponent(pdfPath.split('/').pop()) : '';
-
     document.getElementById('doc-title').textContent = pdfName || 'ドキュメント';
-    document.getElementById('back-btn').onclick = () => history.back();
-
-    if (!pdfPath) {
-        showError('URLにPDFパスが指定されていません。');
-    } else {
-        loadPDF(pdfPath);
-    }
-
-    let pdfDoc = null;
-    let pageCanvases = [];
-    let pageWrappers = [];
-    const SCALE = 1.5;
-    const RENDER_AHEAD = 2;
-    const renderingPages = new Set();
-
+    if (!pdfPath) { showError('URLにPDFパスが指定されていません。'); } else { loadPDF(pdfPath); }
+    let pdfDoc = null, pageCanvases = [], pageWrappers = [];
+    const SCALE = 1.5, RENDER_AHEAD = 2, renderingPages = new Set();
+    let observer = null;
     async function loadPDF(path) {
         try {
             pdfDoc = await pdfjsLib.getDocument({
                 url: path,
-                cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/cmaps/',
+                cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
                 cMapPacked: true,
-                standardFontDataUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/standard_fonts/',
-                useSystemFonts: true
+                standardFontDataUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/standard_fonts/'
             }).promise;
-
             const total = pdfDoc.numPages;
-            document.getElementById('page-info').textContent = `1 / ${total} ページ`;
-
+            document.getElementById('page-info').textContent = '1 / ' + total + ' ページ';
             const firstPage = await pdfDoc.getPage(1);
             const vp = firstPage.getViewport({ scale: SCALE });
-            const W = Math.round(vp.width);
-            const H = Math.round(vp.height);
-
+            const W = Math.round(vp.width), H = Math.round(vp.height);
             const pdfArea = document.getElementById('pdf-area');
-            pageCanvases = [];
-            pageWrappers = [];
-
+            pageCanvases = []; pageWrappers = [];
             for (let i = 1; i <= total; i++) {
                 const wrapper = document.createElement('div');
-                wrapper.className = 'page-wrapper';
-                wrapper.id = `pw-${i}`;
-                wrapper.dataset.page = i;
-                wrapper.style.position = 'relative';
-                wrapper.style.marginBottom = '4px';
-                wrapper.style.width = W + 'px';
-                wrapper.style.height = H + 'px';
-
+                wrapper.className = 'page-wrapper'; wrapper.id = 'pw-' + i;
+                wrapper.dataset.page = i; wrapper.style.cssText = 'position:relative;margin-bottom:4px;width:' + W + 'px;height:' + H + 'px;';
                 const label = document.createElement('div');
-                label.className = 'page-label';
-                label.textContent = `${i} ページ`;
-
+                label.className = 'page-label'; label.textContent = i + ' ページ';
                 const placeholder = document.createElement('div');
                 placeholder.className = 'page-placeholder';
-                placeholder.style.width = W + 'px';
-                placeholder.style.height = H + 'px';
-                placeholder.textContent = `${i} ページ`;
-
+                placeholder.style.cssText = 'width:' + W + 'px;height:' + H + 'px;';
+                placeholder.textContent = i + ' ページ';
                 const canvas = document.createElement('canvas');
-                canvas.style.display = 'none';
-                pageCanvases.push(canvas);
-
-                wrapper.appendChild(label);
-                wrapper.appendChild(placeholder);
-                wrapper.appendChild(canvas);
-                pdfArea.appendChild(wrapper);
-                pageWrappers.push(wrapper);
+                canvas.style.display = 'none'; pageCanvases.push(canvas);
+                wrapper.appendChild(label); wrapper.appendChild(placeholder); wrapper.appendChild(canvas);
+                pdfArea.appendChild(wrapper); pageWrappers.push(wrapper);
             }
-
             document.getElementById('loading').style.display = 'none';
-
-            // 指定ページにジャンプ
             const jumpPage = parseInt(params.get('page') || '1');
             const startPage = Math.max(1, Math.min(jumpPage, total));
-
             await renderPageRange(startPage, Math.min(startPage + RENDER_AHEAD, total));
-
             if (startPage > 1) {
-                const targetWrapper = document.getElementById(`pw-${startPage}`);
-                if (targetWrapper) {
-                    setTimeout(() => {
-                        pdfArea.scrollTop = targetWrapper.offsetTop - 10;
-                    }, 100);
-                }
+                const tw = document.getElementById('pw-' + startPage);
+                if (tw) setTimeout(() => { pdfArea.scrollTop = tw.offsetTop - 10; }, 100);
             }
-
-            // IntersectionObserverで遅延描画
-            const observer = new IntersectionObserver((entries) => {
+            observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (!entry.isIntersecting) return;
                     const p = parseInt(entry.target.dataset.page);
@@ -158,56 +98,41 @@
                     renderPageRange(Math.max(1, p - 1), Math.min(total, p + RENDER_AHEAD));
                 });
             }, { root: pdfArea, rootMargin: '300px 0px', threshold: 0 });
-
             pageWrappers.forEach(w => observer.observe(w));
-
-            // スクロールでページ番号更新
-            pdfArea.addEventListener('scroll', () => {
-                if (!pageCanvases.length) return;
-                const scrollTop = pdfArea.scrollTop + 80;
-                let current = 1;
-                pageWrappers.forEach((w, i) => { if (w.offsetTop <= scrollTop) current = i + 1; });
-                document.getElementById('page-info').textContent = `${current} / ${pageCanvases.length} ページ`;
-            });
-
-        } catch (e) {
-            showError(e.message || 'PDFの読み込みに失敗しました。');
-        }
+        } catch (e) { showError(e.message || 'PDFの読み込みに失敗しました。'); }
     }
-
     async function renderPageRange(from, to) {
         const tasks = [];
         for (let i = from; i <= to; i++) tasks.push(renderPage(i));
         await Promise.all(tasks);
     }
-
     async function renderPage(pageNum) {
         if (!pdfDoc) return;
         const canvas = pageCanvases[pageNum - 1];
         if (!canvas || canvas.dataset.rendered === '1' || renderingPages.has(pageNum)) return;
-
         renderingPages.add(pageNum);
         try {
             const page = await pdfDoc.getPage(pageNum);
             const vp = page.getViewport({ scale: SCALE });
-            canvas.width = vp.width;
-            canvas.height = vp.height;
-
+            canvas.width = vp.width; canvas.height = vp.height;
             await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
             canvas.dataset.rendered = '1';
-
-            const wrapper = document.getElementById(`pw-${pageNum}`);
+            const wrapper = document.getElementById('pw-' + pageNum);
             if (wrapper) {
                 const ph = wrapper.querySelector('.page-placeholder');
                 if (ph) ph.style.display = 'none';
-                canvas.style.display = 'block';
-                wrapper.style.height = '';
+                canvas.style.display = 'block'; wrapper.style.height = '';
             }
-        } finally {
-            renderingPages.delete(pageNum);
-        }
+        } finally { renderingPages.delete(pageNum); }
     }
-
+    function onPdfScroll() {
+        if (!pageCanvases.length) return;
+        const pdfArea = document.getElementById('pdf-area');
+        const scrollTop = pdfArea.scrollTop + 80;
+        let current = 1;
+        pageWrappers.forEach((w, i) => { if (w.offsetTop <= scrollTop) current = i + 1; });
+        document.getElementById('page-info').textContent = current + ' / ' + pageCanvases.length + ' ページ';
+    }
     function showError(msg) {
         document.getElementById('loading').style.display = 'none';
         document.getElementById('error-detail').textContent = msg;

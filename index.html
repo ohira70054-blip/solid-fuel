@@ -384,8 +384,8 @@
             const items = fileObj.toc.map(t => {
                 const lvClass = t.level >= 3 ? 'level-3' : t.level === 2 ? 'level-2' : '';
                 const pageNum = typeof t.page === 'number' ? t.page : parseInt(t.page) || 1;
-                const url = `${pdfPath}#page=${pageNum}`;
-                return `<div class="toc-item ${lvClass}" onclick="openTocPage('${url}')">${t.title}<span style="float:right;color:#94a3b8;margin-left:8px;">${pageNum}p</span></div>`;
+                const url = `${pdfPath}`;
+                return `<div class="toc-item ${lvClass}" onclick="openTocPage('${url}', ${pageNum})">${t.title}<span style="float:right;color:#94a3b8;margin-left:8px;">${pageNum}p</span></div>`;
             }).join('');
 
             dropdown.innerHTML = `
@@ -407,8 +407,10 @@
             currentTocPath = pdfPath;
         }
 
-        function openTocPage(url) {
-            window.open(url, '_blank');
+        function openTocPage(pdfPath, pageNum) {
+            const base = location.href.replace(/\/[^/]*$/, '/');
+            const viewerUrl = base + 'docs/viewer.html?pdf=' + encodeURIComponent(pdfPath) + '&page=' + pageNum;
+            window.open(viewerUrl, '_blank');
             closeToc();
         }
 

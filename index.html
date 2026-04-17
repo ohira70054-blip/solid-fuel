@@ -408,7 +408,10 @@
         }
 
         function openTocPage(pdfPath, pageNum) {
-            window.open(pdfPath + '#page=' + pageNum, '_blank');
+            const root = location.origin + location.pathname.replace(/\/[^/]*$/, '/');
+            const pdfUrl = root + pdfPath;
+            const viewerUrl = root + 'docs/viewer.html?pdf=' + encodeURIComponent(pdfUrl) + '&page=' + pageNum;
+            window.open(viewerUrl, '_blank');
             closeToc();
         }
 

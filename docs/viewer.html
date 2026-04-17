@@ -143,8 +143,22 @@
 
             document.getElementById('loading').style.display = 'none';
 
-            // 最初の数ページを即描画
-            await renderPageRange(1, Math.min(RENDER_AHEAD + 1, total));
+            // 指定ページにジャンプ
+            const jumpPage = parseInt(params.get('page') || '1');
+            const startPage = Math.max(1, Math.min(jumpPage, total));
+
+            // 指定ページ周辺を即描画
+            await renderPageRange(startPage, Math.min(startPage + RENDER_AHEAD, total));
+
+            // 指定ページにスクロール
+            if (startPage > 1) {
+                const targetWrapper = document.getElementById(`pw-${startPage}`);
+                if (targetWrapper) {
+                    setTimeout(() => {
+                        document.getElementById('pdf-area').scrollTop = targetWrapper.offsetTop - 10;
+                    }, 100);
+                }
+            }
 
             // IntersectionObserverで遅延描画
             observer = new IntersectionObserver((entries) => {

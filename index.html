@@ -408,8 +408,10 @@
         }
 
         function openTocPage(pdfPath, pageNum) {
-            const base = location.href.replace(/\/[^/]*$/, '/');
-            const viewerUrl = base + 'docs/viewer.html?pdf=' + encodeURIComponent(pdfPath) + '&page=' + pageNum;
+            // viewer.htmlはdocs/内にあるため、rootをsolid-fuel/まで遡る
+            const root = location.origin + location.pathname.replace(/\/[^/]*$/, '/').replace(/\/docs\/$/, '/');
+            const pdfUrl = root + pdfPath;
+            const viewerUrl = root + 'docs/viewer.html?pdf=' + encodeURIComponent(pdfUrl) + '&page=' + pageNum;
             window.open(viewerUrl, '_blank');
             closeToc();
         }

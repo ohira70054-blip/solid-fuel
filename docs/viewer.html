@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>取扱説明書ビューア</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: sans-serif; background: #0f172a; color: #f1f5f9; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
@@ -70,7 +70,7 @@
 
     const params = new URLSearchParams(location.search);
     const pdfPath = params.get('pdf');
-    const pdfName = pdfPath ? pdfPath.split('/').pop() : '';
+    const pdfName = pdfPath ? decodeURIComponent(pdfPath.split('/').pop()) : '';
 
     document.getElementById('doc-title').textContent = pdfName || 'ドキュメント';
 
@@ -93,7 +93,12 @@
 
     async function loadPDF(path) {
         try {
-            pdfDoc = await pdfjsLib.getDocument(path).promise;
+            pdfDoc = await pdfjsLib.getDocument({
+                url: path,
+                cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
+                cMapPacked: true,
+                standardFontDataUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/standard_fonts/'
+            }).promise;
             const total = pdfDoc.numPages;
 
             document.getElementById('page-info').textContent = `1 / ${total} ページ`;

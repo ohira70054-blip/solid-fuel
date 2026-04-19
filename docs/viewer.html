@@ -66,18 +66,18 @@
     document.getElementById('doc-title').textContent = pdfName || 'ドキュメント';
     document.getElementById('back-btn').onclick = () => history.back();
 
-    if (!pdfPath) {
-        showError('URLにPDFパスが指定されていません。');
-    } else {
-        loadPDF(pdfPath);
-    }
-
     let pdfDoc = null;
     let pageCanvases = [];
     let pageWrappers = [];
     const SCALE = 1.5;
     const RENDER_AHEAD = 2;
     const renderingPages = new Set();
+
+    if (!pdfPath) {
+        showError('URLにPDFパスが指定されていません。');
+    } else {
+        loadPDF(pdfPath);
+    }
 
     async function loadPDF(path) {
         try {

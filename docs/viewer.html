@@ -69,9 +69,10 @@
     let pdfDoc = null;
     let pageCanvases = [];
     let pageWrappers = [];
-    const SCALE = 1.5;
     const RENDER_AHEAD = 2;
     const renderingPages = new Set();
+    // スマホは画面幅に合わせてスケール調整、PCは1.5固定
+    const SCALE = window.innerWidth < 768 ? (window.innerWidth - 30) / 595 : 1.5;
 
     if (!pdfPath) {
         showError('URLにPDFパスが指定されていません。');

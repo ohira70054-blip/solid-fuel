@@ -72,7 +72,7 @@
         .toc-btn:hover { background: #0284c7; }
         .toc-dropdown { display: none; position: fixed; z-index: 8000; background: var(--header-bg); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); padding: 6px 0; min-width: 260px; max-width: 360px; max-height: 320px; overflow-y: auto; }
         .toc-dropdown.open { display: block; }
-        .toc-item { padding: 6px 14px; font-size: 0.8rem; cursor: pointer; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-left: 3px solid transparent; }
+        .toc-item { display: block; padding: 6px 14px; font-size: 0.8rem; cursor: pointer; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-left: 3px solid transparent; text-decoration: none; }
         .toc-item:hover { background: var(--btn-bg); color: var(--primary); border-left-color: var(--primary); }
         .toc-item.level-2 { padding-left: 24px; font-size: 0.75rem; color: #64748b; }
         .toc-item.level-3 { padding-left: 34px; font-size: 0.72rem; color: #94a3b8; }
@@ -140,7 +140,8 @@
                         <b>・絞り込み：</b>検索窓に文字入力<br>
                         <b>・お気に入り：</b>★をタップして固定<br>
                         <b>・閲覧：</b>PDFは別タブ、CADは保存<br>
-                        <b>・目次：</b>📋ボタンで目次表示、項目クリックでページジャンプ（取扱説明書のみ・PCのみ対応）<br>
+                        <b>・目次：</b>📋ボタンで目次表示、項目クリックでページジャンプ（取扱説明書のみ・PC専用）<br>
+                        <b>・スマホ：</b>ファイル名をタップしてPDFを開き、手動でページを移動<br>
                         <b>・プレビュー：</b>ファイル名にカーソルを当てる（PDFのみ）<br>
                         <b>・モード切替：</b>右上の ☀️/🌙 ボタン
                     </div>
@@ -381,11 +382,13 @@
             if (!fileObj || !fileObj.toc || fileObj.toc.length === 0) return;
 
             // ドロップダウンの内容を生成
+            const root = location.origin + location.pathname.replace(/\/[^/]*$/, '/');
+            const pdfUrl = root + pdfPath;
             const items = fileObj.toc.map(t => {
                 const lvClass = t.level >= 3 ? 'level-3' : t.level === 2 ? 'level-2' : '';
                 const pageNum = typeof t.page === 'number' ? t.page : parseInt(t.page) || 1;
-                const url = `${pdfPath}`;
-                return `<div class="toc-item ${lvClass}" onclick="openTocPage('${url}', ${pageNum})">${t.title}<span style="float:right;color:#94a3b8;margin-left:8px;">${pageNum}p</span></div>`;
+                const viewerUrl = root + 'docs/viewer.html?pdf=' + encodeURIComponent(pdfUrl) + '&page=' + pageNum;
+                return `<a class="toc-item ${lvClass}" href="${viewerUrl}" target="_blank" onclick="closeToc()">${t.title}<span style="float:right;color:#94a3b8;margin-left:8px;">${pageNum}p</span></a>`;
             }).join('');
 
             dropdown.innerHTML = `
